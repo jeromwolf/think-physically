@@ -87,7 +87,7 @@ export default function Episode2Synopsis() {
                 50명이 10개 팀으로 나뉜다. 각 팀 5명.
               </p>
               <p className="mt-2 text-cyber-cyan">
-                <strong>팀 7:</strong> 서하준, 강하늘, 박진우, 이서연, 최현수, 린, 김태호
+                <strong>팀 7:</strong> 서하준, 강하늘, 박시우, 이지안, 최현수, 린, 김태호
               </p>
               <p className="mt-2 text-gray-500">
                 (의도적으로 7명이 한 팀에 배정됨 - 후에 밝혀지는 이유가 있다)
@@ -123,13 +123,13 @@ export default function Episode2Synopsis() {
                 </div>
 
                 <div className="pl-4 border-l-2 border-gray-400">
-                  <p className="text-gray-400">박진우</p>
+                  <p className="text-gray-400">박시우</p>
                   <p className="text-sm text-gray-400">"전직 군인입니다."</p>
                   <p className="text-xs text-gray-500">(더 이상 말 안 함. 출구를 확인하고 있음)</p>
                 </div>
 
                 <div className="pl-4 border-l-2 border-pink-400">
-                  <p className="text-pink-400">이서연</p>
+                  <p className="text-pink-400">이지안</p>
                   <p className="text-sm text-gray-400">"의대생이에요! 의료 담당으로 왔어요."</p>
                   <p className="text-xs text-gray-500">(밝게 웃음. 하지만 손목을 자꾸 만짐)</p>
                 </div>
@@ -172,7 +172,7 @@ export default function Episode2Synopsis() {
               </p>
               <p className="mt-2">
                 다른 팀원이 공황 상태에 빠진다.
-                <span className="text-gray-400">박진우</span>가 침착하게 그를 진정시킨다.
+                <span className="text-gray-400">박시우</span>가 침착하게 그를 진정시킨다.
               </p>
               <p className="mt-2 text-gray-400 italic">
                 "호흡에 집중해. 4초 들이쉬고, 7초 내쉬어."
@@ -437,11 +437,11 @@ export default function Episode2Synopsis() {
               <p className="text-gray-400">긴장하면 옛날 노래 흥얼거림</p>
             </div>
             <div className="p-3 bg-dark-800 rounded-lg border border-gray-400/20">
-              <p className="text-gray-400 font-bold">박진우</p>
+              <p className="text-gray-400 font-bold">박시우</p>
               <p className="text-gray-400">항상 출구 확인, 벽 등지고 앉음</p>
             </div>
             <div className="p-3 bg-dark-800 rounded-lg border border-pink-400/20">
-              <p className="text-pink-400 font-bold">이서연</p>
+              <p className="text-pink-400 font-bold">이지안</p>
               <p className="text-gray-400">무의식적으로 손목 맥박 확인</p>
             </div>
             <div className="p-3 bg-dark-800 rounded-lg border border-blue-400/20">

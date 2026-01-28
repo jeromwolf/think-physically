@@ -574,8 +574,8 @@ export default function WebtoonEp1Synopsis() {
                 <p className="text-white font-mono text-sm">
                   #47 서하준 ✓<br/>
                   #48 강하늘 ✓<br/>
-                  #49 박진우 ✓<br/>
-                  #50 이서연 ✓<br/>
+                  #49 박시우 ✓<br/>
+                  #50 이지안 ✓<br/>
                   ...
                 </p>
               </div>

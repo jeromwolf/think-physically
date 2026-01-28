@@ -51,8 +51,8 @@ ThinkPhysically (설명 + 심화)
 ### 메인 캐릭터 (7인)
 1. **서하준 (28)** - 물리학자, 천재지만 인정 못 받음
 2. **강하늘 (26)** - 전직 아이돌, 스캔들로 추락
-3. **박진우 (32)** - 전직 특수부대원, PTSD
-4. **이서연 (24)** - 의대생, 말기 백혈병
+3. **박시우 (32)** - 전직 특수부대원, PTSD
+4. **이지안 (24)** - 의대생, 말기 백혈병
 5. **최현수 (45)** - 로봇 공학자, 가족 잃음
 6. **린 (22)** - 해커, 쫓기는 중
 7. **김태호 (67)** - 전직 교사, 말기 암
@@ -96,9 +96,16 @@ think-physically/
 │           └── tech-research/      # 기술 리서치 (NASA, SpaceX 기반)
 ├── assets/
 │   ├── characters/                 # 캐릭터 이미지 (기존)
-│   ├── scenes/                     # 장면 이미지
-│   ├── video/                      # 티저 영상 (v1~v4)
-│   └── audio/                      # BGM
+│   ├── scenes/                     # 장면 이미지 + 캐릭터 배경(bg-*)
+│   ├── video/                      # 출력 영상
+│   ├── audio/                      # BGM
+│   ├── editor/                     # YAML 시나리오 영상 편집기
+│   │   ├── render.ts               # 메인 렌더러 (YAML → ffmpeg)
+│   │   ├── schema.ts               # 타입 정의
+│   │   ├── effects.ts              # 효과 (zoom, pan, fade)
+│   │   └── text-overlay.ts         # 텍스트 오버레이
+│   └── scenarios/                  # YAML 시나리오 파일
+│       └── character-intro.yaml    # 캐릭터 소개 영상
 └── CLAUDE.md
 ```
 
@@ -143,7 +150,12 @@ think-physically/
 - ✅ **장면1**: 화성 표면 + 로버 + 먼지폭풍
 - ✅ **장면2**: 로켓 발사
 - ✅ **장면3**: 우주선 창문에서 본 지구
-- ✅ **캐릭터 이미지**: 서하준, 강하늘, 박진우, 이서연, 최현수, 린, 김태호, 한소희
+- ✅ **캐릭터 이미지**: 서하준, 강하늘, 박시우, 이지안, 최현수, 린, 김태호(교체), 한소희
+
+### Gemini 생성 이미지 (2026-01-28)
+- ✅ **캐릭터 배경 이미지 7종**: bg-서하준, bg-강하늘, bg-박시우, bg-이지안, bg-최현수, bg-린, bg-김태호
+- ✅ **영화 포스터 썸네일**: 7인 합성 포스터 (유튜브 썸네일용)
+- ✅ **김태호 캐릭터 교체**: 연예인 닮은 문제로 새로 생성
 
 ### 유튜브 채널 (2026-01-27)
 - ✅ **채널 개설**: @MarsTicketOfficial
@@ -153,21 +165,37 @@ think-physically/
   - 🔗 https://www.youtube.com/watch?v=2zxo7WbGwl8
 - ⚠️ **저작권**: BGM 저작권 감지됨 (사용 허용, 수익은 저작권자)
 
+### 유튜브 영상 (2026-01-28)
+- ✅ **캐릭터 소개 영상**: character-intro.mp4 (60초, 1080p, 14.7MB)
+  - 7인 캐릭터 배경 이미지 + 이름/직업/태그라인 + BGM
+  - BGM: Pixabay "Risk" (저작권 무료)
+  - 썸네일: 7인 합성 영화 포스터
+  - @MarsTicketOfficial 채널 업로드 완료
+
+### YAML 시나리오 영상 편집기 (2026-01-28)
+- ✅ **editor/schema.ts**: 타입 정의 (VideoScenario, Scene 유니온, AudioConfig, TextConfig)
+- ✅ **editor/effects.ts**: ffmpeg 효과 필터 (zoom-in/out, slow-zoom, pan-left/right)
+- ✅ **editor/text-overlay.ts**: drawtext/drawbox 필터 (대사, 나레이션, 타이틀)
+- ✅ **editor/render.ts**: YAML 파싱 → filter_complex 조합 → ffmpeg 실행
+- ✅ **scenarios/character-intro.yaml**: 캐릭터 소개 영상 시나리오
+- 사용법: `npx tsx assets/editor/render.ts assets/scenarios/<시나리오>.yaml`
+- 지원 장면: title, scene(나레이션), dialogue(대사), composite(캐릭터 합성)
+- dialogue 텍스트 순차 등장: 박스(0.8s) → 캐릭터명(1.0s) → 대사(1.8s)
+
 ### 시스템 설계
 - ✅ 지식 크로스오버 시스템 (7인 전문성 융합)
 - ✅ 드라마→사업 파이프라인 (기술별 스타트업 아이디어)
 - ✅ 멀티플랫폼 전략
 
 ## 다음 작업
+- 에피소드 1 영상 제작 (YAML 편집기 사용)
 - 유튜브 영어 제목/설명 추가 (글로벌 노출)
 - 유튜브 재생목록 생성
-- 유튜브 썸네일 교체 (로고2.png)
 - 프로필 시네마틱 버전 업그레이드
-- 신규 이미지들 assets 폴더로 정리
 - 웹툰 실제 작화 (AI 또는 작가)
 - 추가 에피소드 시놉시스
 - 커뮤니티 기능 기획
-- 향후 영상은 저작권 없는 음악 사용 (YouTube Audio Library, Suno 등)
+- 유튜브 저작권 감지 여부 확인 (캐릭터 소개 영상 BGM)
 
 ## 레퍼런스
 - **스토리**: Nicky Case (인터랙티브), Wait But Why (딥 엔터테인먼트)
@@ -181,6 +209,12 @@ think-physically/
 - 2026-01-27: 유튜브 채널 @MarsTicketOfficial 개설 완료
 - 2026-01-27: 채널아트 + 프로필 설정 완료
 - 2026-01-27: 첫 영상 (티저_v4.mp4) 업로드 완료
+- 2026-01-28: 캐릭터 이름 변경 (박진우→박시우, 이서연→이지안)
+- 2026-01-28: 김태호 캐릭터 이미지 교체 (연예인 닮은 문제)
+- 2026-01-28: Gemini로 캐릭터 배경 이미지 7종 생성
+- 2026-01-28: 캐릭터 소개 영상 제작 및 유튜브 업로드 (60초, BGM: Pixabay Risk)
+- 2026-01-28: 7인 합성 영화 포스터 썸네일 제작
+- 2026-01-28: YAML 시나리오 영상 편집기 개발 (editor/render.ts + schema + effects + text-overlay)
 
 ---
 

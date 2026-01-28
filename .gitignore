@@ -38,3 +38,5 @@ next-env.d.ts
 # Large assets (images, videos, audio)
 # Keep these locally, too large for GitHub
 assets/
+!assets/editor/
+!assets/scenarios/

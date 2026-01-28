@@ -1,0 +1,103 @@
+title: "화성행 티켓 | 7인의 탑승자 - 캐릭터 소개"
+output: "character-intro-v2.mp4"
+fps: 25
+
+audio:
+  bgm: "audio/bgm-new.mp3"
+  volume: 0.8
+  fade_in: 2
+  fade_out: 3
+
+scenes:
+  # 오프닝
+  - type: title
+    bg: "scenes/로고.png"
+    duration: 4
+    transition: fade
+    texts:
+      - content: "7인의 탑승자"
+        position: bottom
+        size: 42
+        color: white
+        appear: 1
+
+  # 서하준
+  - type: dialogue
+    bg: "scenes/bg-서하준.png"
+    duration: 7
+    transition: fade
+    character: "서하준 (28)"
+    character_color: "0x00FFFF"
+    dialogue: "물리학자 · 증명되지 않은 천재"
+
+  # 강하늘
+  - type: dialogue
+    bg: "scenes/bg-강하늘.png"
+    duration: 7
+    transition: fade
+    character: "강하늘 (26)"
+    character_color: "0x00FFFF"
+    dialogue: "전직 아이돌 · 추락한 별"
+
+  # 박시우
+  - type: dialogue
+    bg: "scenes/bg-박시우.png"
+    duration: 7
+    transition: fade
+    character: "박시우 (32)"
+    character_color: "0x00FFFF"
+    dialogue: "전직 특수부대원 · 돌아갈 곳이 없는 군인"
+
+  # 이지안
+  - type: dialogue
+    bg: "scenes/bg-이지안.png"
+    duration: 7
+    transition: fade
+    character: "이지안 (24)"
+    character_color: "0x00FFFF"
+    dialogue: "의대생 · 죽음 앞에 선 의대생"
+
+  # 최현수
+  - type: dialogue
+    bg: "scenes/bg-최현수.png"
+    duration: 7
+    transition: fade
+    character: "최현수 (45)"
+    character_color: "0x00FFFF"
+    dialogue: "로봇 공학자 · 가족을 잃은 과학자"
+
+  # 린
+  - type: dialogue
+    bg: "scenes/bg-린.png"
+    duration: 7
+    transition: fade
+    character: "린 (22)"
+    character_color: "0x00FFFF"
+    dialogue: "해커 · 쫓기는 천재"
+
+  # 김태호
+  - type: dialogue
+    bg: "scenes/bg-김태호.png"
+    duration: 7
+    transition: fade
+    character: "김태호 (67)"
+    character_color: "0x00FFFF"
+    dialogue: "전직 교사 · 마지막 수업"
+
+  # 엔딩
+  - type: title
+    bg: "scenes/로고.png"
+    duration: 7
+    transition: fade
+    texts:
+      - content: "편도 티켓. 돌아올 수 없는 여정."
+        position: bottom
+        size: 36
+        color: white
+        appear: 0.8
+      - content: "COMING SOON"
+        position: bottom
+        size: 28
+        color: "0x00FFFF"
+        y: 990
+        appear: 2

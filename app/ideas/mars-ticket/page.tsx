@@ -6,8 +6,8 @@ import { ArrowLeft, Rocket, Users, Tv, Youtube, Globe, Sparkles } from 'lucide-r
 const characters = [
   { name: '서하준', age: 28, role: '물리학자', desc: '천재지만 인정 못 받음', color: 'cyber-cyan' },
   { name: '강하늘', age: 26, role: '전직 아이돌', desc: '스캔들로 추락', color: 'cyber-purple' },
-  { name: '박진우', age: 32, role: '전직 특수부대원', desc: 'PTSD', color: 'gray-400' },
-  { name: '이서연', age: 24, role: '의대생', desc: '말기 백혈병', color: 'pink-400' },
+  { name: '박시우', age: 32, role: '전직 특수부대원', desc: 'PTSD', color: 'gray-400' },
+  { name: '이지안', age: 24, role: '의대생', desc: '말기 백혈병', color: 'pink-400' },
   { name: '최현수', age: 45, role: '로봇 공학자', desc: '가족 잃음', color: 'blue-400' },
   { name: '린', age: 22, role: '해커', desc: '쫓기는 중', color: 'green-400' },
   { name: '김태호', age: 67, role: '전직 교사', desc: '말기 암', color: 'yellow-400' },

@@ -208,8 +208,8 @@ export default function Episode4Synopsis() {
               <div className="mt-3 p-3 bg-dark-700/50 rounded font-mono text-sm">
                 <p className="text-cyber-cyan">서하준 - 이론물리학</p>
                 <p className="text-cyber-purple">강하늘 - 극한환경 적응</p>
-                <p className="text-gray-400">박진우 - 위기관리/전술</p>
-                <p className="text-pink-400">이서연 - 의료</p>
+                <p className="text-gray-400">박시우 - 위기관리/전술</p>
+                <p className="text-pink-400">이지안 - 의료</p>
                 <p className="text-blue-400">최현수 - Physical AI</p>
                 <p className="text-green-400">린 - 시스템/보안</p>
                 <p className="text-yellow-400">김태호 - 교육/통합</p>

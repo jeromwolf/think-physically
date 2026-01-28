@@ -50,7 +50,7 @@ const characters = [
     crossover: [
       { with: '최현수', topic: '로봇 보행 알고리즘의 물리적 기반' },
       { with: '린', topic: '암호화의 수학적 원리' },
-      { with: '이서연', topic: '인체의 물리학 (혈류, 압력)' },
+      { with: '이지안', topic: '인체의 물리학 (혈류, 압력)' },
     ],
   },
   {
@@ -97,14 +97,14 @@ const characters = [
     arc: '가면 뒤에 숨어있던 그녀가, 화성에서 진짜 자신을 드러내는 법을 배운다.',
 
     crossover: [
-      { with: '박진우', topic: '극한 환경 생존 전술' },
+      { with: '박시우', topic: '극한 환경 생존 전술' },
       { with: '김태호', topic: '인생의 두 번째 막' },
       { with: '서하준', topic: '계산할 수 없는 인간의 의지' },
     ],
   },
   {
     id: 3,
-    name: '박진우',
+    name: '박시우',
     age: 32,
     role: '전직 특수부대원',
     color: 'gray-400',
@@ -154,7 +154,7 @@ const characters = [
   },
   {
     id: 4,
-    name: '이서연',
+    name: '이지안',
     age: 24,
     role: '의대생',
     color: 'pink-400',
@@ -251,7 +251,7 @@ const characters = [
 
     crossover: [
       { with: '서하준', topic: '역진자 원리와 로봇 보행의 물리학' },
-      { with: '박진우', topic: '위험 환경용 로봇 운용' },
+      { with: '박시우', topic: '위험 환경용 로봇 운용' },
       { with: '린', topic: 'AI 보안과 해킹 방어' },
     ],
 
@@ -309,7 +309,7 @@ const characters = [
     crossover: [
       { with: '서하준', topic: '양자 암호화의 물리적 원리' },
       { with: '최현수', topic: 'AI 시스템 보안' },
-      { with: '박진우', topic: '사이버 전쟁과 물리적 보안의 융합' },
+      { with: '박시우', topic: '사이버 전쟁과 물리적 보안의 융합' },
     ],
 
     mystery: '그녀가 화성 시스템에 심으려는 것은 무엇인가? 시즌 1 미스터리.',
@@ -361,7 +361,7 @@ const characters = [
 
     crossover: [
       { with: '서하준', topic: '이론과 실천의 연결 (멘토-멘티)' },
-      { with: '이서연', topic: '죽음을 앞둔 자들의 대화' },
+      { with: '이지안', topic: '죽음을 앞둔 자들의 대화' },
       { with: '모든 캐릭터', topic: '팀의 정신적 지주, 갈등 중재자' },
     ],
 
@@ -583,7 +583,7 @@ export default function CharactersPage() {
               </div>
               <div className="p-3 bg-dark-700 rounded">
                 <p className="text-pink-400 font-bold">의학</p>
-                <p className="text-gray-500">이서연</p>
+                <p className="text-gray-500">이지안</p>
               </div>
               <div className="p-3 bg-dark-700 rounded">
                 <p className="text-green-400 font-bold">사이버</p>
@@ -591,7 +591,7 @@ export default function CharactersPage() {
               </div>
               <div className="p-3 bg-dark-700 rounded">
                 <p className="text-gray-400 font-bold">전술/생존</p>
-                <p className="text-gray-500">박진우 + 강하늘</p>
+                <p className="text-gray-500">박시우 + 강하늘</p>
               </div>
               <div className="p-3 bg-dark-700 rounded">
                 <p className="text-cyber-purple font-bold">인간/심리</p>
@@ -623,7 +623,7 @@ export default function CharactersPage() {
             </div>
             <div className="p-4 bg-dark-800 rounded-lg border border-pink-400/30">
               <p className="text-pink-400 font-bold">시한부 동지</p>
-              <p className="text-gray-400 text-sm">이서연 ↔ 김태호</p>
+              <p className="text-gray-400 text-sm">이지안 ↔ 김태호</p>
               <p className="text-gray-500 text-xs mt-1">죽음을 앞둔 자들의 대화</p>
             </div>
             <div className="p-4 bg-dark-800 rounded-lg border border-red-400/30">
