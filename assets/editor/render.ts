@@ -6,7 +6,7 @@
  * 사용법: npx ts-node assets/editor/render.ts assets/scenarios/example.yaml
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { parse as parseYAML } from 'yaml';
@@ -25,6 +25,13 @@ interface YAMLScene {
   effect?: string;
   transition?: string;
 
+  // Configurable fade duration (default 0.8)
+  fade_duration?: number;
+
+  // Text border (default: borderw=2, bordercolor=black)
+  text_borderw?: number;
+  text_bordercolor?: string;
+
   // title 타입
   texts?: Array<{
     content: string;
@@ -33,6 +40,12 @@ interface YAMLScene {
     color?: string;
     y?: number;
     appear?: number;
+    borderw?: number;
+    bordercolor?: string;
+    shadow?: boolean;
+    shadowcolor?: string;
+    shadowx?: number;
+    shadowy?: number;
   }>;
 
   // scene 타입 - 나레이션
@@ -47,6 +60,12 @@ interface YAMLScene {
   character_img?: string;
   character_position?: string;
   character_scale?: number;
+
+  // 효과음 (SFX)
+  sfx?: string;         // Path to sound effect file (relative to assets/)
+  sfx_volume?: number;  // SFX volume 0.0-1.0 (default 0.5)
+  sfx_delay?: number;   // Delay in seconds from scene start (default 0)
+  sfx_loop?: boolean;   // Loop SFX for scene duration (default false, useful for ambient)
 }
 
 interface YAMLScenario {
@@ -73,29 +92,29 @@ function resolvePath(filePath: string): string {
 }
 
 // ============================================================================
-// Filter Generators
+// Unified Text Filter Generator
 // ============================================================================
 
-function generateSceneFilter(
-  scene: YAMLScene,
-  inputIndex: number,
-  fps: number
-): string {
+function getTextFilters(scene: YAMLScene): string[] {
   const filters: string[] = [];
   const dur = scene.duration;
-  const effect = scene.effect || 'none';
-  const transition = scene.transition || 'fade';
+  // Default border: 2px black outline
+  const sceneBorderW = scene.text_borderw ?? 2;
+  const sceneBorderColor = scene.text_bordercolor ?? 'black';
 
-  // 1. Effect filter (zoompan)
-  const effectFilter = getEffectFilter(effect, dur, fps);
-  filters.push(effectFilter);
+  function textStyleParams(text?: { borderw?: number; bordercolor?: string; shadow?: boolean; shadowcolor?: string; shadowx?: number; shadowy?: number }): string {
+    const bw = text?.borderw ?? sceneBorderW;
+    const bc = text?.bordercolor ?? sceneBorderColor;
+    let params = `:borderw=${bw}:bordercolor=${bc}`;
+    if (text?.shadow) {
+      const sc = text.shadowcolor ?? 'black@0.5';
+      const sx = text.shadowx ?? 2;
+      const sy = text.shadowy ?? 2;
+      params += `:shadowcolor=${sc}:shadowx=${sx}:shadowy=${sy}`;
+    }
+    return params;
+  }
 
-  // 2. Transition fades
-  const { fadeIn, fadeOut } = getTransitionFilter(transition, dur);
-  filters.push(fadeIn);
-  if (fadeOut) filters.push(fadeOut);
-
-  // 3. Text overlays based on scene type
   switch (scene.type) {
     case 'title':
       if (scene.texts) {
@@ -109,7 +128,6 @@ function generateSceneFilter(
           let x: string;
           let y: number;
 
-          // Position handling
           if (t.y !== undefined) {
             y = t.y;
             x = t.position === 'left' ? '80' : '(w-text_w)/2';
@@ -120,13 +138,12 @@ function generateSceneFilter(
             y = 80;
             x = '(w-text_w)/2';
           } else {
-            // center (default)
             y = 480;
             x = '(w-text_w)/2';
           }
 
           filters.push(
-            `drawtext=fontfile='${FONT}':text='${text}':fontsize=${size}:fontcolor=${color}:x=${x}:y=${y}:enable='between(t\\,${appear}\\,${end})'`
+            `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=${size}:fontcolor=${color}:x=${x}:y=${y}${textStyleParams(t)}:enable='between(t,${appear},${end})'`
           );
         }
       }
@@ -137,12 +154,11 @@ function generateSceneFilter(
         const text = escapeText(scene.narration);
         const appear = 0.8;
         const end = dur - 0.5;
-        // Narration box
         filters.push(
-          `drawbox=x=0:y=920:w=iw:h=120:color=black@0.7:t=fill:enable='between(t\\,${appear}\\,${end})'`
+          `drawbox=x=0:y=890:w=iw:h=150:color=black@0.7:t=fill:enable='between(t,${appear},${end})'`
         );
         filters.push(
-          `drawtext=fontfile='${FONT}':text='${text}':fontsize=32:fontcolor=white:x=(w-text_w)/2:y=955:enable='between(t\\,${appear}\\,${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=40:fontcolor=white:x=(w-text_w)/2:y=925${textStyleParams()}:enable='between(t,${appear},${end})'`
         );
       }
       break;
@@ -157,23 +173,20 @@ function generateSceneFilter(
         const dialogueAppear = 1.8;
         const end = dur - 0.3;
 
-        // Dialogue box
         filters.push(
-          `drawbox=x=0:y=880:w=iw:h=200:color=black@0.7:t=fill:enable='between(t\\,${boxAppear}\\,${end})'`
+          `drawbox=x=0:y=840:w=iw:h=240:color=black@0.7:t=fill:enable='between(t,${boxAppear},${end})'`
         );
-        // Character name
         filters.push(
-          `drawtext=fontfile='${FONT}':text='${name}':fontsize=36:fontcolor=${nameColor}:x=80:y=900:enable='between(t\\,${nameAppear}\\,${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${name}:fontsize=44:fontcolor=${nameColor}:x=80:y=860${textStyleParams()}:enable='between(t,${nameAppear},${end})'`
         );
-        // Dialogue text
         filters.push(
-          `drawtext=fontfile='${FONT}':text='${text}':fontsize=28:fontcolor=white:x=80:y=950:enable='between(t\\,${dialogueAppear}\\,${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=36:fontcolor=white:x=80:y=920${textStyleParams()}:enable='between(t,${dialogueAppear},${end})'`
         );
       }
       break;
 
     case 'composite':
-      // Text overlays for composite (same as title)
+      // Text overlays
       if (scene.texts) {
         for (const t of scene.texts) {
           const text = escapeText(t.content);
@@ -185,15 +198,30 @@ function generateSceneFilter(
           const x = t.position === 'left' ? '80' : '(w-text_w)/2';
 
           filters.push(
-            `drawtext=fontfile='${FONT}':text='${text}':fontsize=${size}:fontcolor=${color}:x=${x}:y=${y}:enable='between(t\\,${appear}\\,${end})'`
+            `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=${size}:fontcolor=${color}:x=${x}:y=${y}${textStyleParams(t)}:enable='between(t,${appear},${end})'`
           );
         }
+      }
+      // Dialogue on composite
+      if (scene.character && scene.dialogue) {
+        const name = escapeText(scene.character);
+        const text = escapeText(scene.dialogue as string);
+        const nameColor = scene.character_color || '0x00FFFF';
+        const end = dur - 0.3;
+        filters.push(
+          `drawbox=x=0:y=840:w=iw:h=240:color=black@0.7:t=fill:enable='between(t,0.8,${end})'`
+        );
+        filters.push(
+          `drawtext=expansion=none:fontfile='${FONT}':text=${name}:fontsize=44:fontcolor=${nameColor}:x=80:y=860${textStyleParams()}:enable='between(t,0.8,${end})'`
+        );
+        filters.push(
+          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=36:fontcolor=white:x=80:y=920${textStyleParams()}:enable='between(t,0.8,${end})'`
+        );
       }
       break;
   }
 
-  const label = `v${inputIndex}`;
-  return `[${inputIndex}:v]${filters.join(',')}[${label}]`;
+  return filters;
 }
 
 // ============================================================================
@@ -204,11 +232,73 @@ function isCompositeScene(scene: YAMLScene): boolean {
   return scene.type === 'composite' && !!scene.character_img;
 }
 
+function getSceneLabel(scene: YAMLScene): string {
+  switch (scene.type) {
+    case 'title':
+      return scene.texts?.[0]?.content?.substring(0, 30) || 'untitled';
+    case 'scene':
+      return scene.narration?.substring(0, 30) || 'no narration';
+    case 'dialogue':
+      return `${scene.character}: "${scene.dialogue?.substring(0, 25) || ''}"`;
+    case 'composite':
+      return scene.character_img?.split('/').pop() || 'composite';
+    default:
+      return '';
+  }
+}
+
+// ============================================================================
+// File Validation
+// ============================================================================
+
+function validateFiles(scenario: YAMLScenario): string[] {
+  const missing: string[] = [];
+
+  // Check BGM
+  const bgmPath = resolvePath(scenario.audio.bgm);
+  if (!existsSync(bgmPath)) missing.push(`BGM: ${bgmPath}`);
+
+  // Check all scene files
+  for (let i = 0; i < scenario.scenes.length; i++) {
+    const scene = scenario.scenes[i];
+
+    // Background image
+    const bgPath = resolvePath(scene.bg);
+    if (!existsSync(bgPath)) missing.push(`장면 ${i + 1} 배경: ${bgPath}`);
+
+    // Character image (composite)
+    if (scene.character_img) {
+      const charPath = resolvePath(scene.character_img);
+      if (!existsSync(charPath)) missing.push(`장면 ${i + 1} 캐릭터: ${charPath}`);
+    }
+
+    // SFX
+    if (scene.sfx) {
+      const sfxPath = resolvePath(scene.sfx);
+      if (!existsSync(sfxPath)) missing.push(`장면 ${i + 1} SFX: ${sfxPath}`);
+    }
+  }
+
+  return missing;
+}
+
+// ============================================================================
+// CLI Argument Types
+// ============================================================================
+
+interface CliArgs {
+  yamlPath: string;
+  sceneIndex?: number;         // --scene N
+  sceneRange?: [number, number]; // --scenes M-N
+  dryRun: boolean;             // --dry-run
+  fast: boolean;               // --fast
+}
+
 // ============================================================================
 // Main Render Function
 // ============================================================================
 
-function render(yamlPath: string) {
+function render(yamlPath: string, cli: CliArgs) {
   // Parse YAML
   const yamlContent = readFileSync(yamlPath, 'utf-8');
   const scenario: YAMLScenario = parseYAML(yamlContent);
@@ -224,6 +314,55 @@ function render(yamlPath: string) {
   const totalDuration = scenario.scenes.reduce((sum, s) => sum + s.duration, 0);
   console.log(`   총 길이: ${totalDuration}초`);
 
+  // Count SFX
+  const sfxCount = scenario.scenes.filter(s => s.sfx).length;
+  console.log(`   효과음: ${sfxCount}개`);
+
+  // Pre-render file validation
+  const missingFiles = validateFiles(scenario);
+  if (missingFiles.length > 0) {
+    console.error(`\n❌ 파일 ${missingFiles.length}개 없음:`);
+    for (const f of missingFiles) {
+      console.error(`   - ${f}`);
+    }
+    process.exit(1);
+  }
+  console.log(`   파일 검증: ✅ 모든 파일 확인됨`);
+
+  // Scene slicing (--scene N or --scenes M-N)
+  let scenesToRender = scenario.scenes;
+  let sceneOffset = 0;  // offset for BGM trimming
+  let outputSuffix = '';
+
+  if (cli.sceneIndex !== undefined) {
+    if (cli.sceneIndex >= scenario.scenes.length) {
+      console.error(`❌ --scene ${cli.sceneIndex} 범위 초과 (0~${scenario.scenes.length - 1})`);
+      process.exit(1);
+    }
+    scenesToRender = [scenario.scenes[cli.sceneIndex]];
+    sceneOffset = scenario.scenes.slice(0, cli.sceneIndex).reduce((sum, s) => sum + s.duration, 0);
+    outputSuffix = `-scene${cli.sceneIndex}`;
+    console.log(`   프리뷰: 장면 ${cli.sceneIndex} (${scenesToRender[0].duration}초)`);
+  } else if (cli.sceneRange) {
+    const [start, end] = cli.sceneRange;
+    if (end >= scenario.scenes.length) {
+      console.error(`❌ --scenes ${start}-${end} 범위 초과 (0~${scenario.scenes.length - 1})`);
+      process.exit(1);
+    }
+    scenesToRender = scenario.scenes.slice(start, end + 1);
+    sceneOffset = scenario.scenes.slice(0, start).reduce((sum, s) => sum + s.duration, 0);
+    outputSuffix = `-scenes${start}-${end}`;
+    console.log(`   범위 렌더: 장면 ${start}~${end} (${scenesToRender.length}개)`);
+  }
+
+  if (cli.fast) {
+    outputSuffix += '-fast';
+    console.log(`   빠른 프리뷰 모드: 960x540, crf 28`);
+  }
+
+  // Recalculate total duration for sliced scenes
+  const renderDuration = scenesToRender.reduce((sum, s) => sum + s.duration, 0);
+
   // Build ffmpeg command
   const inputs: string[] = [];
   const filterParts: string[] = [];
@@ -232,22 +371,17 @@ function render(yamlPath: string) {
   let inputIdx = 0;
 
   // Process each scene
-  for (let i = 0; i < scenario.scenes.length; i++) {
-    const scene = scenario.scenes[i];
+  for (let i = 0; i < scenesToRender.length; i++) {
+    const scene = scenesToRender[i];
+    console.log(`   [${i + 1}/${scenesToRender.length}] ${scene.type}: ${getSceneLabel(scene)}`);
     const bgPath = resolvePath(scene.bg);
 
-    if (!existsSync(bgPath)) {
-      console.error(`❌ 파일 없음: ${bgPath}`);
-      process.exit(1);
-    }
+    const fadeDuration = scene.fade_duration;
+    const textFilters = getTextFilters(scene);
 
     if (isCompositeScene(scene)) {
       // Composite: bg + character overlay
       const charPath = resolvePath(scene.character_img!);
-      if (!existsSync(charPath)) {
-        console.error(`❌ 캐릭터 파일 없음: ${charPath}`);
-        process.exit(1);
-      }
 
       const bgIdx = inputIdx++;
       const charIdx = inputIdx++;
@@ -280,85 +414,46 @@ function render(yamlPath: string) {
         `[${bgLabel}][${charLabel}]overlay=${overlayX}:H-h:shortest=1[${overlayLabel}]`
       );
 
-      // Apply effects and text on composited result
-      const effect = scene.effect || 'none';
+      // Apply fades + text on composited result
       const transition = scene.transition || 'fade';
-      const { fadeIn, fadeOut } = getTransitionFilter(transition, scene.duration);
+      const { fadeIn, fadeOut } = getTransitionFilter(transition, scene.duration, fadeDuration);
 
       const postFilters: string[] = [fadeIn];
       if (fadeOut) postFilters.push(fadeOut);
-
-      // Text overlays
-      if (scene.texts) {
-        for (const t of scene.texts) {
-          const text = escapeText(t.content);
-          const size = t.size || 32;
-          const color = t.color || 'white';
-          const appear = t.appear || 0.8;
-          const end = scene.duration - 0.5;
-          const y = t.y || 950;
-          const x = t.position === 'left' ? '80' : '(w-text_w)/2';
-
-          postFilters.push(
-            `drawtext=fontfile='${FONT}':text='${text}':fontsize=${size}:fontcolor=${color}:x=${x}:y=${y}:enable='between(t\\,${appear}\\,${end})'`
-          );
-        }
-      }
-
-      // Dialogue on composite
-      if (scene.character && scene.dialogue) {
-        const name = escapeText(scene.character);
-        const text = escapeText(scene.dialogue as string);
-        const nameColor = scene.character_color || '0x00FFFF';
-        postFilters.push(
-          `drawbox=x=0:y=880:w=iw:h=200:color=black@0.7:t=fill:enable='between(t\\,0.8\\,${scene.duration - 0.3})'`
-        );
-        postFilters.push(
-          `drawtext=fontfile='${FONT}':text='${name}':fontsize=36:fontcolor=${nameColor}:x=80:y=900:enable='between(t\\,0.8\\,${scene.duration - 0.3})'`
-        );
-        postFilters.push(
-          `drawtext=fontfile='${FONT}':text='${text}':fontsize=28:fontcolor=white:x=80:y=950:enable='between(t\\,0.8\\,${scene.duration - 0.3})'`
-        );
-      }
+      postFilters.push(...textFilters);
 
       const vLabel = `v${i}`;
       filterParts.push(`[${overlayLabel}]${postFilters.join(',')}[${vLabel}]`);
       concatInputs.push(`[${vLabel}]`);
     } else {
       // Standard scene (title, scene, dialogue)
-      inputs.push(`-loop 1 -t ${scene.duration} -i "${bgPath}"`);
+      const hasZoompan = scene.effect && scene.effect !== 'none';
+      if (hasZoompan) {
+        inputs.push(`-i "${bgPath}"`);
+      } else {
+        inputs.push(`-loop 1 -t ${scene.duration} -i "${bgPath}"`);
+      }
 
-      // For non-effect scenes, use scale+pad instead of zoompan
-      if (!scene.effect || scene.effect === 'none') {
+      const transition = scene.transition || 'fade';
+      const { fadeIn, fadeOut } = getTransitionFilter(transition, scene.duration, fadeDuration);
+
+      if (!hasZoompan) {
         const scaleFilter = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1`;
-        const transition = scene.transition || 'fade';
-        const { fadeIn, fadeOut } = getTransitionFilter(transition, scene.duration);
-
         const allFilters: string[] = [scaleFilter, fadeIn];
         if (fadeOut) allFilters.push(fadeOut);
-
-        // Add text overlays
-        const textFilters = getTextFiltersForScene(scene, fps);
         allFilters.push(...textFilters);
 
         const vLabel = `v${i}`;
         filterParts.push(`[${inputIdx}:v]${allFilters.join(',')}[${vLabel}]`);
         concatInputs.push(`[${vLabel}]`);
       } else {
-        // With zoompan effect - need to scale first, then zoompan
         const scaleFilter = `scale=1920x1080:force_original_aspect_ratio=increase,crop=1920:1080`;
-        const effectFilter = getEffectFilter(scene.effect, scene.duration, fps);
-        const transition = scene.transition || 'fade';
-        const { fadeIn, fadeOut } = getTransitionFilter(transition, scene.duration);
-
+        const effectFilter = getEffectFilter(scene.effect!, scene.duration, fps);
         const preLabel = `pre${i}`;
         filterParts.push(`[${inputIdx}:v]${scaleFilter}[${preLabel}]`);
 
         const allFilters: string[] = [effectFilter, fadeIn];
         if (fadeOut) allFilters.push(fadeOut);
-
-        // Add text overlays
-        const textFilters = getTextFiltersForScene(scene, fps);
         allFilters.push(...textFilters);
 
         const vLabel = `v${i}`;
@@ -370,43 +465,138 @@ function render(yamlPath: string) {
     }
   }
 
-  // Audio input
+  // Audio input (BGM)
   const bgmPath = resolvePath(scenario.audio.bgm);
-  if (!existsSync(bgmPath)) {
-    console.error(`❌ BGM 파일 없음: ${bgmPath}`);
-    process.exit(1);
-  }
-  const audioIdx = inputIdx;
+  const audioIdx = inputIdx++;
   inputs.push(`-i "${bgmPath}"`);
 
+  // Collect SFX inputs
+  interface SFXTrack {
+    inputIdx: number;
+    delay: number;
+    volume: number;
+    loop: boolean;
+    duration: number;
+  }
+  const sfxTracks: SFXTrack[] = [];
+  let currentTime = 0;
+
+  for (const scene of scenesToRender) {
+    if (scene.sfx) {
+      const sfxPath = resolvePath(scene.sfx);
+
+      const sfxInputIdx = inputIdx++;
+      inputs.push(`-i "${sfxPath}"`);
+
+      const sfxDelay = scene.sfx_delay || 0;
+      const absoluteDelay = currentTime + sfxDelay;
+      const sfxVolume = scene.sfx_volume || 0.5;
+      const sfxLoop = scene.sfx_loop || false;
+
+      sfxTracks.push({
+        inputIdx: sfxInputIdx,
+        delay: absoluteDelay,
+        volume: sfxVolume,
+        loop: sfxLoop,
+        duration: scene.duration
+      });
+    }
+    currentTime += scene.duration;
+  }
+
   // Concat all video streams
-  const concatFilter = `${concatInputs.join('')}concat=n=${scenario.scenes.length}:v=1:a=0[outv]`;
+  const concatFilter = `${concatInputs.join('')}concat=n=${scenesToRender.length}:v=1:a=0[outv]`;
   filterParts.push(concatFilter);
 
   // Audio processing
   const volume = scenario.audio.volume || 0.8;
-  const fadeIn = scenario.audio.fade_in || 2;
-  const fadeOut = scenario.audio.fade_out || 3;
-  const audioFilter = `[${audioIdx}:a]atrim=0:${totalDuration},volume=${volume},afade=t=in:st=0:d=${fadeIn},afade=t=out:st=${totalDuration - fadeOut}:d=${fadeOut}[outa]`;
-  filterParts.push(audioFilter);
+  const audioFadeIn = scenario.audio.fade_in || 2;
+  const audioFadeOut = scenario.audio.fade_out || 3;
+
+  if (sfxTracks.length === 0) {
+    // No SFX - just BGM
+    const audioFilter = `[${audioIdx}:a]atrim=${sceneOffset}:${sceneOffset + renderDuration},asetpts=PTS-STARTPTS,volume=${volume},afade=t=in:st=0:d=${audioFadeIn},afade=t=out:st=${renderDuration - audioFadeOut}:d=${audioFadeOut}[outa]`;
+    filterParts.push(audioFilter);
+  } else {
+    // BGM + SFX mixing
+    const bgmFilter = `[${audioIdx}:a]atrim=${sceneOffset}:${sceneOffset + renderDuration},asetpts=PTS-STARTPTS,volume=${volume},afade=t=in:st=0:d=${audioFadeIn},afade=t=out:st=${renderDuration - audioFadeOut}:d=${audioFadeOut}[bgm]`;
+    filterParts.push(bgmFilter);
+
+    // Process each SFX track
+    const sfxLabels: string[] = [];
+    for (let i = 0; i < sfxTracks.length; i++) {
+      const sfx = sfxTracks[i];
+      const delayMs = Math.floor(sfx.delay * 1000);
+      const sfxLabel = `sfx${i}`;
+
+      if (sfx.loop) {
+        // Loop SFX for scene duration
+        const loopFilter = `[${sfx.inputIdx}:a]aloop=loop=-1:size=2e+09,atrim=0:${sfx.duration},adelay=${delayMs}|${delayMs},volume=${sfx.volume}[${sfxLabel}]`;
+        filterParts.push(loopFilter);
+      } else {
+        // Single SFX playback
+        const sfxFilter = `[${sfx.inputIdx}:a]adelay=${delayMs}|${delayMs},volume=${sfx.volume}[${sfxLabel}]`;
+        filterParts.push(sfxFilter);
+      }
+
+      sfxLabels.push(`[${sfxLabel}]`);
+    }
+
+    // Mix BGM + all SFX tracks
+    const mixInputs = ['[bgm]', ...sfxLabels].join('');
+    const mixFilter = `${mixInputs}amix=inputs=${1 + sfxTracks.length}:duration=first:dropout_transition=0[outa]`;
+    filterParts.push(mixFilter);
+  }
 
   // Build output path
-  const outputPath = resolve(ASSETS_DIR, 'video', scenario.output.endsWith('.mp4') ? scenario.output : `${scenario.output}.mp4`);
+  const baseName = scenario.output.endsWith('.mp4')
+    ? scenario.output.slice(0, -4)
+    : scenario.output;
+  const outputPath = resolve(ASSETS_DIR, 'video', `${baseName}${outputSuffix}.mp4`);
+
+  // Write filter_complex to a script file (avoids shell escaping issues)
+  const filterScript = filterParts.join(';\n');
+  const filterScriptPath = resolve(ASSETS_DIR, 'video', '.filter_complex.txt');
+  writeFileSync(filterScriptPath, filterScript, 'utf-8');
+  console.log(`   필터 스크립트: ${filterScriptPath}`);
 
   // Assemble ffmpeg command
+  const encodingParams = cli.fast
+    ? `-c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p -s 960:540`
+    : `-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p`;
+
   const cmd = [
     'ffmpeg -y',
     ...inputs,
-    `-filter_complex "${filterParts.join('; ')}"`,
+    `-filter_complex_script "${filterScriptPath}"`,
     '-map "[outv]" -map "[outa]"',
-    `-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p`,
+    encodingParams,
     `-c:a aac -b:a 192k`,
     `-shortest`,
     `"${outputPath}"`
   ].join(' \\\n  ');
 
+  console.log(`   필터 수: ${filterParts.length}개`);
   console.log(`\n📦 출력: ${outputPath}`);
+
+  // Dry-run: output command without executing
+  if (cli.dryRun) {
+    console.log(`\n📋 DRY RUN — ffmpeg 실행 안 함`);
+    console.log(`\n--- filter_complex ---`);
+    console.log(filterScript);
+    console.log(`\n--- ffmpeg 명령어 ---`);
+    console.log(cmd);
+    console.log(`\n📊 요약:`);
+    console.log(`   입력: ${inputs.length}개`);
+    console.log(`   필터: ${filterParts.length}개`);
+    console.log(`   장면: ${scenesToRender.length}개`);
+    console.log(`   예상 길이: ${renderDuration}초`);
+    return;
+  }
+
   console.log(`\n⚙️  ffmpeg 실행 중...`);
+
+  const startTime = Date.now();
 
   try {
     execSync(cmd, { stdio: 'pipe', maxBuffer: 1024 * 1024 * 50 });
@@ -418,6 +608,9 @@ function render(yamlPath: string) {
     const sizeMB = (parseInt(format.size) / 1024 / 1024).toFixed(1);
     console.log(`   크기: ${sizeMB}MB`);
     console.log(`   길이: ${parseFloat(format.duration).toFixed(1)}초`);
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`   소요 시간: ${elapsed}초`);
   } catch (err: any) {
     console.error('\n❌ 렌더링 실패:');
     console.error(err.stderr?.toString() || err.message);
@@ -430,104 +623,85 @@ function render(yamlPath: string) {
 }
 
 // ============================================================================
-// Helper: Generate text filters for standard scenes
+// CLI Argument Parser
 // ============================================================================
 
-function getTextFiltersForScene(scene: YAMLScene, fps: number): string[] {
-  const filters: string[] = [];
-  const dur = scene.duration;
+function parseCliArgs(): CliArgs {
+  const args = process.argv.slice(2);
 
-  switch (scene.type) {
-    case 'title':
-      if (scene.texts) {
-        for (const t of scene.texts) {
-          const text = escapeText(t.content);
-          const size = t.size || 48;
-          const color = t.color || 'white';
-          const appear = t.appear || 0.5;
-          const end = dur - 0.5;
+  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
+    console.log(`사용법: npx tsx assets/editor/render.ts <시나리오.yaml> [옵션]
 
-          let x: string;
-          let y: number;
+옵션:
+  --scene N       단일 장면만 렌더링 (0-based index)
+  --scenes M-N    장면 범위 렌더링 (0-based, inclusive)
+  --dry-run       ffmpeg 실행 없이 필터와 명령어만 출력
+  --fast          빠른 프리뷰 (저해상도, 저품질)
+  -h, --help      도움말 표시
 
-          if (t.y !== undefined) {
-            y = t.y;
-            x = t.position === 'left' ? '80' : '(w-text_w)/2';
-          } else if (t.position === 'bottom-center' || t.position === 'bottom') {
-            y = 940;
-            x = '(w-text_w)/2';
-          } else if (t.position === 'top-center' || t.position === 'top') {
-            y = 80;
-            x = '(w-text_w)/2';
-          } else {
-            y = 480;
-            x = '(w-text_w)/2';
-          }
-
-          filters.push(
-            `drawtext=fontfile='${FONT}':text='${text}':fontsize=${size}:fontcolor=${color}:x=${x}:y=${y}:enable='between(t\\,${appear}\\,${end})'`
-          );
-        }
-      }
-      break;
-
-    case 'scene':
-      if (scene.narration) {
-        const text = escapeText(scene.narration);
-        const appear = 0.8;
-        const end = dur - 0.5;
-        filters.push(
-          `drawbox=x=0:y=920:w=iw:h=120:color=black@0.7:t=fill:enable='between(t\\,${appear}\\,${end})'`
-        );
-        filters.push(
-          `drawtext=fontfile='${FONT}':text='${text}':fontsize=32:fontcolor=white:x=(w-text_w)/2:y=955:enable='between(t\\,${appear}\\,${end})'`
-        );
-      }
-      break;
-
-    case 'dialogue':
-      if (scene.character && scene.dialogue) {
-        const name = escapeText(scene.character);
-        const text = escapeText(scene.dialogue);
-        const nameColor = scene.character_color || '0x00FFFF';
-        const boxAppear = 0.8;
-        const nameAppear = 1.0;
-        const dialogueAppear = 1.8;
-        const end = dur - 0.3;
-
-        filters.push(
-          `drawbox=x=0:y=880:w=iw:h=200:color=black@0.7:t=fill:enable='between(t\\,${boxAppear}\\,${end})'`
-        );
-        filters.push(
-          `drawtext=fontfile='${FONT}':text='${name}':fontsize=36:fontcolor=${nameColor}:x=80:y=900:enable='between(t\\,${nameAppear}\\,${end})'`
-        );
-        filters.push(
-          `drawtext=fontfile='${FONT}':text='${text}':fontsize=28:fontcolor=white:x=80:y=950:enable='between(t\\,${dialogueAppear}\\,${end})'`
-        );
-      }
-      break;
+예시:
+  npx tsx assets/editor/render.ts assets/scenarios/ep01.yaml
+  npx tsx assets/editor/render.ts assets/scenarios/ep01.yaml --scene 5
+  npx tsx assets/editor/render.ts assets/scenarios/ep01.yaml --scenes 5-10 --fast
+  npx tsx assets/editor/render.ts assets/scenarios/ep01.yaml --dry-run`);
+    process.exit(0);
   }
 
-  return filters;
+  const result: CliArgs = {
+    yamlPath: '',
+    dryRun: false,
+    fast: false,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--scene') {
+      const val = parseInt(args[++i], 10);
+      if (isNaN(val) || val < 0) {
+        console.error('❌ --scene 값은 0 이상의 정수여야 합니다');
+        process.exit(1);
+      }
+      result.sceneIndex = val;
+    } else if (arg === '--scenes') {
+      const val = args[++i];
+      const match = val?.match(/^(\d+)-(\d+)$/);
+      if (!match) {
+        console.error('❌ --scenes 형식: M-N (예: 5-10)');
+        process.exit(1);
+      }
+      const start = parseInt(match[1], 10);
+      const end = parseInt(match[2], 10);
+      if (start > end) {
+        console.error('❌ --scenes 시작이 끝보다 클 수 없습니다');
+        process.exit(1);
+      }
+      result.sceneRange = [start, end];
+    } else if (arg === '--dry-run') {
+      result.dryRun = true;
+    } else if (arg === '--fast') {
+      result.fast = true;
+    } else if (!arg.startsWith('--') && !result.yamlPath) {
+      result.yamlPath = arg;
+    }
+  }
+
+  if (!result.yamlPath) {
+    console.error('❌ YAML 파일 경로가 필요합니다');
+    process.exit(1);
+  }
+
+  return result;
 }
 
 // ============================================================================
 // CLI Entry Point
 // ============================================================================
 
-const yamlPath = process.argv[2];
-if (!yamlPath) {
-  console.log('사용법: npx ts-node assets/editor/render.ts <시나리오.yaml>');
-  console.log('');
-  console.log('예시:');
-  console.log('  npx ts-node assets/editor/render.ts assets/scenarios/character-intro.yaml');
-  process.exit(1);
-}
-
-const fullPath = resolve(yamlPath);
+const cliArgs = parseCliArgs();
+const fullPath = resolve(cliArgs.yamlPath);
 if (!existsSync(fullPath)) {
   console.error(`파일 없음: ${fullPath}`);
   process.exit(1);
 }
 
-render(fullPath);
+render(fullPath, cliArgs);

@@ -21,12 +21,18 @@ export interface TextConfig {
  * @returns Escaped text safe for ffmpeg
  */
 export function escapeText(text: string): string {
+  // Dual-level escaping for ffmpeg filter_complex drawtext text= value (unquoted).
+  // Level 2 (filtergraph): \, for comma, \; for semicolon, \' for quote, \[ \] for brackets
+  // Level 1 (filter options): \\: for colon (L2 \\ → \, then L1 \: → :)
+  // Backslash: \\\\ (L2 \\\\ → \\, L1 \\ → \)
   return text
-    .replace(/\\/g, '\\\\')    // Backslashes
-    .replace(/'/g, "\\'")      // Single quotes
-    .replace(/:/g, '\\:')      // Colons
-    .replace(/\[/g, '\\[')     // Square brackets
-    .replace(/\]/g, '\\]');
+    .replace(/\\/g, '\\\\\\\\')    // \ → \\\\ (L2→\\, L1→\)
+    .replace(/:/g, '\\\\:')        // : → \\: (L2→\:, L1→:)
+    .replace(/'/g, "\\'")           // ' → \' (L2→')
+    .replace(/,/g, '\\,')           // , → \, (L2→,)
+    .replace(/;/g, '\\;')           // ; → \; (L2→;)
+    .replace(/\[/g, '\\[')          // [ → \[ (L2→[)
+    .replace(/]/g, '\\]');          // ] → \] (L2→])
 }
 
 /**
@@ -50,13 +56,13 @@ export function getTitleTextFilters(texts: TextConfig[], duration: number): stri
     const escapedText = escapeText(text);
     const xPos = x === 'center' ? '(w-text_w)/2' : x;
 
-    let filter = `drawtext=fontfile='${FONT_PATH}':text='${escapedText}':`;
+    let filter = `drawtext=fontfile='${FONT_PATH}':text=${escapedText}:`;
     filter += `fontsize=${fontsize}:fontcolor=${fontcolor}:`;
     filter += `x=${xPos}:y=${y}`;
 
     // Add timing if not default (0 to end)
     if (appearTime > 0 || disappearTime < duration) {
-      filter += `:enable='between(t\\,${appearTime}\\,${disappearTime})'`;
+      filter += `:enable='between(t,${appearTime},${disappearTime})'`;
     }
 
     return filter;
@@ -89,23 +95,23 @@ export function getDialogueFilters(
   // Background box
   filters.push(
     `drawbox=x=0:y=${boxY}:w=iw:h=${boxHeight}:color=black@0.6:t=fill` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   // Character name
   filters.push(
-    `drawtext=fontfile='${FONT_PATH}':text='${escapeText(characterName)}':` +
+    `drawtext=fontfile='${FONT_PATH}':text=${escapeText(characterName)}:` +
     `fontsize=36:fontcolor=${characterColor}:` +
     `x=${leftMargin}:y=${nameY}` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   // Dialogue text
   filters.push(
-    `drawtext=fontfile='${FONT_PATH}':text='${escapeText(dialogue)}':` +
+    `drawtext=fontfile='${FONT_PATH}':text=${escapeText(dialogue)}:` +
     `fontsize=28:fontcolor=white:` +
     `x=${leftMargin}:y=${dialogueY}` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   return filters;
@@ -134,15 +140,15 @@ export function getNarrationFilters(
   // Background box
   filters.push(
     `drawbox=x=0:y=${boxY}:w=iw:h=${boxHeight}:color=black@${bgOpacity}:t=fill` +
-    `:enable='between(t\\,${appear}\\,${duration})'`
+    `:enable='between(t,${appear},${duration})'`
   );
 
   // Centered text
   filters.push(
-    `drawtext=fontfile='${FONT_PATH}':text='${escapeText(text)}':` +
+    `drawtext=fontfile='${FONT_PATH}':text=${escapeText(text)}:` +
     `fontsize=32:fontcolor=white:` +
     `x=(w-text_w)/2:y=${textY}` +
-    `:enable='between(t\\,${appear}\\,${duration})'`
+    `:enable='between(t,${appear},${duration})'`
   );
 
   return filters;
@@ -175,31 +181,31 @@ export function getSceneInfoFilters(
   // Background bar
   filters.push(
     `drawbox=x=0:y=${boxY}:w=iw:h=${boxHeight}:color=black@0.7:t=fill` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   // Name (large, white)
   filters.push(
-    `drawtext=fontfile='${FONT_PATH}':text='${escapeText(name)}':` +
+    `drawtext=fontfile='${FONT_PATH}':text=${escapeText(name)}:` +
     `fontsize=48:fontcolor=white:` +
     `x=${leftMargin}:y=${nameY}` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   // Role (cyan)
   filters.push(
-    `drawtext=fontfile='${FONT_PATH}':text='${escapeText(role)}':` +
+    `drawtext=fontfile='${FONT_PATH}':text=${escapeText(role)}:` +
     `fontsize=32:fontcolor=cyan:` +
     `x=${leftMargin}:y=${roleY}` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   // Tagline (gray)
   filters.push(
-    `drawtext=fontfile='${FONT_PATH}':text='${escapeText(tagline)}':` +
+    `drawtext=fontfile='${FONT_PATH}':text=${escapeText(tagline)}:` +
     `fontsize=28:fontcolor=gray:` +
     `x=${leftMargin}:y=${taglineY}` +
-    `:enable='between(t\\,${appearTime}\\,${duration})'`
+    `:enable='between(t,${appearTime},${duration})'`
   );
 
   return filters;

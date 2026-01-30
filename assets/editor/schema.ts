@@ -30,6 +30,24 @@ export interface AudioConfig {
 }
 
 // ============================================================================
+// Sound Effects Configuration
+// ============================================================================
+
+export interface SfxConfig {
+  /** Path to sound effect file (relative to assets folder or absolute) */
+  file: string;
+
+  /** Volume level (0.0 = mute, 1.0 = full volume, default 0.5) */
+  volume: number;
+
+  /** Delay from scene start in seconds (default 0) */
+  delay: number;
+
+  /** Loop SFX for entire scene duration (default false, useful for ambient sounds) */
+  loop: boolean;
+}
+
+// ============================================================================
 // Text Configuration
 // ============================================================================
 
@@ -119,6 +137,9 @@ export interface TitleScene {
 
   /** Transition to next scene */
   transition: Transition;
+
+  /** Optional sound effects configuration */
+  sfx?: SfxConfig;
 }
 
 /**
@@ -141,6 +162,9 @@ export interface NarrativeScene {
 
   /** Transition to next scene */
   transition: Transition;
+
+  /** Optional sound effects configuration */
+  sfx?: SfxConfig;
 }
 
 /**
@@ -169,6 +193,9 @@ export interface DialogueScene {
 
   /** Transition to next scene */
   transition: Transition;
+
+  /** Optional sound effects configuration */
+  sfx?: SfxConfig;
 }
 
 /**
@@ -194,6 +221,9 @@ export interface CompositeScene {
 
   /** Transition to next scene */
   transition: Transition;
+
+  /** Optional sound effects configuration */
+  sfx?: SfxConfig;
 }
 
 /**

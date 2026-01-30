@@ -10,11 +10,11 @@ export interface StageProgress {
 }
 
 export interface UserProgress {
-  odptionversion: number // 데이터 마이그레이션을 위한 버전
-  odptionname: string
-  odptionlevel: number
-  odptionxp: number
-  odptionxpToNextLevel: number
+  version: number // 데이터 마이그레이션을 위한 버전
+  name: string
+  level: number
+  xp: number
+  xpToNextLevel: number
   stages: Record<string, StageProgress>
   badges: string[]
   challengeRecords: Record<string, number> // challengeId -> bestTime

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Zap, Bot, Thermometer, Atom } from 'lucide-react'
+import { ArrowLeft, Zap, Bot, Thermometer, Atom, Wind, Rocket } from 'lucide-react'
 
 // 로고 컴포넌트
 const Logo = ({ size = 40 }: { size?: number }) => (
@@ -22,14 +22,26 @@ const Logo = ({ size = 40 }: { size?: number }) => (
 
 const blogPosts = [
   {
-    id: 1,
-    slug: 'remove-the-part',
-    title: '부품의 최저단가는 부품을 없애는 것이다',
-    description: '일론 머스크에게 배우는 물리학적 사고의 첫 번째 원칙. 최소 작용 원리와 테슬라의 기가캐스팅.',
-    category: 'First Principles',
-    icon: <Zap className="w-6 h-6" />,
-    date: '2026-01-22',
+    id: 4,
+    slug: 'mars-distance',
+    title: '화성까지 2억 2500만 km',
+    description: '빛의 속도로 12분 30초, 우주선으로 6개월 — 그 거리의 물리학',
+    category: 'Mars Science',
+    icon: <Rocket className="w-6 h-6" />,
+    date: '2026-01-30',
+    readTime: '6분',
+    episodeLink: 'EP.02',
+  },
+  {
+    id: 3,
+    slug: 'mars-atmosphere',
+    title: '화성의 대기압은 지구의 0.6%',
+    description: '감압 챔버에서 살아남기 — 화성행 티켓 EP.02에서 배우는 화성 대기의 물리학',
+    category: 'Mars Science',
+    icon: <Wind className="w-6 h-6" />,
+    date: '2026-01-30',
     readTime: '5분',
+    episodeLink: 'EP.02',
   },
   {
     id: 2,
@@ -41,6 +53,16 @@ const blogPosts = [
     date: '2026-01-22',
     readTime: '7분',
     hasSimulator: true,
+  },
+  {
+    id: 1,
+    slug: 'remove-the-part',
+    title: '부품의 최저단가는 부품을 없애는 것이다',
+    description: '일론 머스크에게 배우는 물리학적 사고의 첫 번째 원칙. 최소 작용 원리와 테슬라의 기가캐스팅.',
+    category: 'First Principles',
+    icon: <Zap className="w-6 h-6" />,
+    date: '2026-01-22',
+    readTime: '5분',
   },
 ]
 
@@ -102,6 +124,11 @@ export default function BlogPage() {
                       {post.hasSimulator && (
                         <span className="px-3 py-1 bg-cyber-purple/10 text-cyber-purple text-xs font-medium rounded-full">
                           Simulator
+                        </span>
+                      )}
+                      {post.episodeLink && (
+                        <span className="px-3 py-1 bg-orange-500/10 text-orange-400 text-xs font-medium rounded-full">
+                          {post.episodeLink}
                         </span>
                       )}
                       <span className="text-gray-500 text-sm">{post.date}</span>

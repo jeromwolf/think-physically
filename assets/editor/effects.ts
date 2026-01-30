@@ -20,28 +20,28 @@ export function getEffectFilter(effect: string, duration: number, fps: number): 
   switch (effect) {
     case 'zoom-in':
       // Slowly zoom into center (1.0 → 1.3)
-      return `zoompan=z='min(zoom+0.0015,1.3)':d=${frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=${fps}`;
+      return `zoompan=z='min(zoom+0.0015,1.3)':d=${frames}:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2):s=1920x1080:fps=${fps}`;
 
     case 'zoom-out':
       // Start zoomed in, slowly zoom out (1.3 → 1.0)
-      return `zoompan=z='if(lte(zoom,1.0),1.3,max(1.001,zoom-0.0015))':d=${frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=${fps}`;
+      return `zoompan=z='if(lte(zoom,1.0),1.3,max(1.001,zoom-0.0015))':d=${frames}:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2):s=1920x1080:fps=${fps}`;
 
     case 'slow-zoom':
       // Very subtle zoom in (1.0 → 1.15)
-      return `zoompan=z='min(zoom+0.0008,1.15)':d=${frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=${fps}`;
+      return `zoompan=z='min(zoom+0.0008,1.15)':d=${frames}:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2):s=1920x1080:fps=${fps}`;
 
     case 'pan-left':
       // Pan from right to left with slight zoom
-      return `zoompan=z=1.2:d=${frames}:x='iw/2-(iw/zoom/2)+(iw/zoom/2)*(1-on/${frames})':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=${fps}`;
+      return `zoompan=z=1.2:d=${frames}:x=iw/2-(iw/zoom/2)+(iw/zoom/2)*(1-on/${frames}):y=ih/2-(ih/zoom/2):s=1920x1080:fps=${fps}`;
 
     case 'pan-right':
       // Pan from left to right with slight zoom
-      return `zoompan=z=1.2:d=${frames}:x='iw/2-(iw/zoom/2)-(iw/zoom/2)*(1-on/${frames})':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=${fps}`;
+      return `zoompan=z=1.2:d=${frames}:x=iw/2-(iw/zoom/2)-(iw/zoom/2)*(1-on/${frames}):y=ih/2-(ih/zoom/2):s=1920x1080:fps=${fps}`;
 
     case 'none':
     default:
       // No effect, just scale to 1920x1080
-      return `zoompan=z=1:d=${frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=${fps}`;
+      return `zoompan=z=1:d=${frames}:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2):s=1920x1080:fps=${fps}`;
   }
 }
 
@@ -54,13 +54,14 @@ export function getEffectFilter(effect: string, duration: number, fps: number): 
  */
 export function getTransitionFilter(
   transition: string,
-  duration: number
+  duration: number,
+  fadeDuration: number = 0.8
 ): { fadeIn: string; fadeOut: string } {
-  const fadeIn = 'fade=t=in:st=0:d=0.8';
+  const fadeIn = `fade=t=in:st=0:d=${fadeDuration}`;
 
   if (transition === 'fade') {
-    const fadeStart = Math.max(0, duration - 0.8);
-    const fadeOut = `fade=t=out:st=${fadeStart.toFixed(2)}:d=0.8`;
+    const fadeStart = Math.max(0, duration - fadeDuration);
+    const fadeOut = `fade=t=out:st=${fadeStart.toFixed(2)}:d=${fadeDuration}`;
     return { fadeIn, fadeOut };
   }
 
