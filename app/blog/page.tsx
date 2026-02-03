@@ -122,6 +122,7 @@ export default function BlogPage() {
           </Link>
           <div className="hidden md:flex items-center gap-8">
             <Link href="/blog" className="text-cyber-cyan transition">Blog</Link>
+            <Link href="/ventures" className="text-gray-400 hover:text-cyber-cyan transition">Ventures</Link>
             <Link href="/simulators" className="text-gray-400 hover:text-cyber-cyan transition">Simulators</Link>
             <Link href="/about" className="text-gray-400 hover:text-cyber-cyan transition">About</Link>
           </div>
