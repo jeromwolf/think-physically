@@ -1,0 +1,5 @@
+# Large assets (images, videos, audio) - editor only
+assets/
+.tts-cache/
+.claude/
+.omc/
