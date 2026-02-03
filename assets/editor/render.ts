@@ -10,77 +10,12 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { parse as parseYAML } from 'yaml';
-import { getEffectFilter, getTransitionFilter } from './effects';
+import { getEffectFilter } from './effects';
+import { getTransitionFilter } from './transitions';
 import { escapeText } from './text-overlay';
-import { ASSETS_DIR, FONT } from './schema';
-
-// ============================================================================
-// Simplified YAML Types (사용자가 작성하기 쉬운 형태)
-// ============================================================================
-
-interface YAMLScene {
-  type: 'title' | 'scene' | 'dialogue' | 'composite';
-  bg: string;
-  duration: number;
-  effect?: string;
-  transition?: string;
-
-  // Configurable fade duration (default 0.8)
-  fade_duration?: number;
-
-  // Text border (default: borderw=2, bordercolor=black)
-  text_borderw?: number;
-  text_bordercolor?: string;
-
-  // title 타입
-  texts?: Array<{
-    content: string;
-    position?: string;
-    size?: number;
-    color?: string;
-    y?: number;
-    appear?: number;
-    borderw?: number;
-    bordercolor?: string;
-    shadow?: boolean;
-    shadowcolor?: string;
-    shadowx?: number;
-    shadowy?: number;
-  }>;
-
-  // scene 타입 - 나레이션
-  narration?: string;
-
-  // dialogue 타입 - 대사
-  character?: string;
-  character_color?: string;
-  dialogue?: string;
-
-  // composite 타입 - 캐릭터 합성
-  character_img?: string;
-  character_position?: string;
-  character_scale?: number;
-
-  // 효과음 (SFX)
-  sfx?: string;         // Path to sound effect file (relative to assets/)
-  sfx_volume?: number;  // SFX volume 0.0-1.0 (default 0.5)
-  sfx_delay?: number;   // Delay in seconds from scene start (default 0)
-  sfx_loop?: boolean;   // Loop SFX for scene duration (default false, useful for ambient)
-}
-
-interface YAMLScenario {
-  title: string;
-  output: string;
-  resolution?: [number, number];
-  fps?: number;
-  audio: {
-    bgm: string;
-    volume?: number;
-    fade_in?: number;
-    fade_out?: number;
-  };
-  scenes: YAMLScene[];
-}
+import { ASSETS_DIR, FONT, YAMLScene, YAMLScenario } from './schema';
+import { buildAudioFilters, SFXTrack, BGMSegment, NarrationTrack } from './audio-mixer';
+import { generateSceneTTS, TTSConfig, TTSResult } from './tts';
 
 // ============================================================================
 // Path Resolution
@@ -155,10 +90,10 @@ function getTextFilters(scene: YAMLScene): string[] {
         const appear = 0.8;
         const end = dur - 0.5;
         filters.push(
-          `drawbox=x=0:y=890:w=iw:h=150:color=black@0.7:t=fill:enable='between(t,${appear},${end})'`
+          `drawbox=x=0:y=870:w=iw:h=180:color=black@0.7:t=fill:enable='between(t,${appear},${end})'`
         );
         filters.push(
-          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=40:fontcolor=white:x=(w-text_w)/2:y=925${textStyleParams()}:enable='between(t,${appear},${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=52:fontcolor=white:x=(w-text_w)/2:y=915${textStyleParams()}:enable='between(t,${appear},${end})'`
         );
       }
       break;
@@ -174,13 +109,13 @@ function getTextFilters(scene: YAMLScene): string[] {
         const end = dur - 0.3;
 
         filters.push(
-          `drawbox=x=0:y=840:w=iw:h=240:color=black@0.7:t=fill:enable='between(t,${boxAppear},${end})'`
+          `drawbox=x=0:y=820:w=iw:h=260:color=black@0.7:t=fill:enable='between(t,${boxAppear},${end})'`
         );
         filters.push(
-          `drawtext=expansion=none:fontfile='${FONT}':text=${name}:fontsize=44:fontcolor=${nameColor}:x=80:y=860${textStyleParams()}:enable='between(t,${nameAppear},${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${name}:fontsize=52:fontcolor=${nameColor}:x=80:y=840${textStyleParams()}:enable='between(t,${nameAppear},${end})'`
         );
         filters.push(
-          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=36:fontcolor=white:x=80:y=920${textStyleParams()}:enable='between(t,${dialogueAppear},${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=44:fontcolor=white:x=80:y=910${textStyleParams()}:enable='between(t,${dialogueAppear},${end})'`
         );
       }
       break;
@@ -209,13 +144,13 @@ function getTextFilters(scene: YAMLScene): string[] {
         const nameColor = scene.character_color || '0x00FFFF';
         const end = dur - 0.3;
         filters.push(
-          `drawbox=x=0:y=840:w=iw:h=240:color=black@0.7:t=fill:enable='between(t,0.8,${end})'`
+          `drawbox=x=0:y=820:w=iw:h=260:color=black@0.7:t=fill:enable='between(t,0.8,${end})'`
         );
         filters.push(
-          `drawtext=expansion=none:fontfile='${FONT}':text=${name}:fontsize=44:fontcolor=${nameColor}:x=80:y=860${textStyleParams()}:enable='between(t,0.8,${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${name}:fontsize=52:fontcolor=${nameColor}:x=80:y=840${textStyleParams()}:enable='between(t,0.8,${end})'`
         );
         filters.push(
-          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=36:fontcolor=white:x=80:y=920${textStyleParams()}:enable='between(t,0.8,${end})'`
+          `drawtext=expansion=none:fontfile='${FONT}':text=${text}:fontsize=44:fontcolor=white:x=80:y=910${textStyleParams()}:enable='between(t,0.8,${end})'`
         );
       }
       break;
@@ -277,6 +212,12 @@ function validateFiles(scenario: YAMLScenario): string[] {
       const sfxPath = resolvePath(scene.sfx);
       if (!existsSync(sfxPath)) missing.push(`장면 ${i + 1} SFX: ${sfxPath}`);
     }
+
+    // Scene-specific BGM override
+    if (scene.bgm) {
+      const sceneBgmPath = resolvePath(scene.bgm);
+      if (!existsSync(sceneBgmPath)) missing.push(`장면 ${i + 1} BGM: ${sceneBgmPath}`);
+    }
   }
 
   return missing;
@@ -292,13 +233,14 @@ interface CliArgs {
   sceneRange?: [number, number]; // --scenes M-N
   dryRun: boolean;             // --dry-run
   fast: boolean;               // --fast
+  tts: boolean;                // --tts
 }
 
 // ============================================================================
 // Main Render Function
 // ============================================================================
 
-function render(yamlPath: string, cli: CliArgs) {
+async function render(yamlPath: string, cli: CliArgs) {
   // Parse YAML
   const yamlContent = readFileSync(yamlPath, 'utf-8');
   const scenario: YAMLScenario = parseYAML(yamlContent);
@@ -360,7 +302,38 @@ function render(yamlPath: string, cli: CliArgs) {
     console.log(`   빠른 프리뷰 모드: 960x540, crf 28`);
   }
 
-  // Recalculate total duration for sliced scenes
+  // TTS: generate early so we can auto-extend scene durations
+  let ttsResults: TTSResult[] = [];
+
+  if (cli.tts) {
+    const ttsConfig: TTSConfig = {
+      voice: scenario.tts?.voice || 'marin',
+      model: scenario.tts?.model || 'gpt-4o-mini-tts',
+      speed: scenario.tts?.speed || 1.0,
+      instructions: scenario.tts?.instructions,
+    };
+
+    console.log(`\n🎙️  TTS 나레이션 생성 중...`);
+    ttsResults = await generateSceneTTS(scenesToRender, ttsConfig);
+
+    // Auto-extend scene durations to fit TTS audio
+    let extended = 0;
+    for (const result of ttsResults) {
+      const scene = scenesToRender[result.sceneIndex];
+      const needed = result.delay + result.audioDuration + 0.5;
+      if (needed > scene.duration) {
+        const newDur = Math.ceil(needed * 2) / 2; // round up to 0.5s
+        console.log(`   📏 장면 ${result.sceneIndex + 1}: ${scene.duration}초 → ${newDur}초 (TTS 맞춤)`);
+        scene.duration = newDur;
+        extended++;
+      }
+    }
+    if (extended > 0) {
+      console.log(`   📏 ${extended}개 장면 길이 자동 연장됨`);
+    }
+  }
+
+  // Recalculate total duration for sliced scenes (after possible TTS extensions)
   const renderDuration = scenesToRender.reduce((sum, s) => sum + s.duration, 0);
 
   // Build ffmpeg command
@@ -447,8 +420,11 @@ function render(yamlPath: string, cli: CliArgs) {
         filterParts.push(`[${inputIdx}:v]${allFilters.join(',')}[${vLabel}]`);
         concatInputs.push(`[${vLabel}]`);
       } else {
-        const scaleFilter = `scale=1920x1080:force_original_aspect_ratio=increase,crop=1920:1080`;
-        const effectFilter = getEffectFilter(scene.effect!, scene.duration, fps);
+        // Scale to 4x resolution for smooth zoompan (avoids subpixel jitter)
+        const upscaleW = width * 4;
+        const upscaleH = height * 4;
+        const scaleFilter = `scale=${upscaleW}x${upscaleH}:force_original_aspect_ratio=increase,crop=${upscaleW}:${upscaleH}`;
+        const effectFilter = getEffectFilter(scene.effect!, scene.duration, fps, width, height);
         const preLabel = `pre${i}`;
         filterParts.push(`[${inputIdx}:v]${scaleFilter}[${preLabel}]`);
 
@@ -471,13 +447,6 @@ function render(yamlPath: string, cli: CliArgs) {
   inputs.push(`-i "${bgmPath}"`);
 
   // Collect SFX inputs
-  interface SFXTrack {
-    inputIdx: number;
-    delay: number;
-    volume: number;
-    loop: boolean;
-    duration: number;
-  }
   const sfxTracks: SFXTrack[] = [];
   let currentTime = 0;
 
@@ -504,49 +473,67 @@ function render(yamlPath: string, cli: CliArgs) {
     currentTime += scene.duration;
   }
 
+  // Collect scene-specific BGM overrides
+  const bgmSegments: BGMSegment[] = [];
+  let bgmSegmentTime = 0;
+
+  for (const scene of scenesToRender) {
+    if (scene.bgm) {
+      const sceneBgmPath = resolvePath(scene.bgm);
+      const bgmInputIdx = inputIdx++;
+      inputs.push(`-i "${sceneBgmPath}"`);
+
+      bgmSegments.push({
+        inputIdx: bgmInputIdx,
+        startTime: bgmSegmentTime,
+        endTime: bgmSegmentTime + scene.duration,
+        volume: scene.bgm_volume ?? (scenario.audio.volume || 0.8),
+        crossfadeDuration: scene.bgm_crossfade || 0,
+      });
+    }
+    bgmSegmentTime += scene.duration;
+  }
+
+  // TTS narration tracks (audio already generated earlier, durations already extended)
+  const narrationTracks: NarrationTrack[] = [];
+
+  if (cli.tts && ttsResults.length > 0) {
+    // Recalculate startTimes based on (possibly extended) scene durations
+    for (const result of ttsResults) {
+      const ttsInputIdx = inputIdx++;
+      inputs.push(`-i "${result.audioPath}"`);
+
+      let absoluteStart = 0;
+      for (let j = 0; j < result.sceneIndex; j++) {
+        absoluteStart += scenesToRender[j].duration;
+      }
+
+      narrationTracks.push({
+        inputIdx: ttsInputIdx,
+        startTime: absoluteStart + result.delay,
+        audioDuration: result.audioDuration,
+        volume: 2.5,
+      });
+    }
+  }
+
   // Concat all video streams
   const concatFilter = `${concatInputs.join('')}concat=n=${scenesToRender.length}:v=1:a=0[outv]`;
   filterParts.push(concatFilter);
 
-  // Audio processing
-  const volume = scenario.audio.volume || 0.8;
-  const audioFadeIn = scenario.audio.fade_in || 2;
-  const audioFadeOut = scenario.audio.fade_out || 3;
-
-  if (sfxTracks.length === 0) {
-    // No SFX - just BGM
-    const audioFilter = `[${audioIdx}:a]atrim=${sceneOffset}:${sceneOffset + renderDuration},asetpts=PTS-STARTPTS,volume=${volume},afade=t=in:st=0:d=${audioFadeIn},afade=t=out:st=${renderDuration - audioFadeOut}:d=${audioFadeOut}[outa]`;
-    filterParts.push(audioFilter);
-  } else {
-    // BGM + SFX mixing
-    const bgmFilter = `[${audioIdx}:a]atrim=${sceneOffset}:${sceneOffset + renderDuration},asetpts=PTS-STARTPTS,volume=${volume},afade=t=in:st=0:d=${audioFadeIn},afade=t=out:st=${renderDuration - audioFadeOut}:d=${audioFadeOut}[bgm]`;
-    filterParts.push(bgmFilter);
-
-    // Process each SFX track
-    const sfxLabels: string[] = [];
-    for (let i = 0; i < sfxTracks.length; i++) {
-      const sfx = sfxTracks[i];
-      const delayMs = Math.floor(sfx.delay * 1000);
-      const sfxLabel = `sfx${i}`;
-
-      if (sfx.loop) {
-        // Loop SFX for scene duration
-        const loopFilter = `[${sfx.inputIdx}:a]aloop=loop=-1:size=2e+09,atrim=0:${sfx.duration},adelay=${delayMs}|${delayMs},volume=${sfx.volume}[${sfxLabel}]`;
-        filterParts.push(loopFilter);
-      } else {
-        // Single SFX playback
-        const sfxFilter = `[${sfx.inputIdx}:a]adelay=${delayMs}|${delayMs},volume=${sfx.volume}[${sfxLabel}]`;
-        filterParts.push(sfxFilter);
-      }
-
-      sfxLabels.push(`[${sfxLabel}]`);
-    }
-
-    // Mix BGM + all SFX tracks
-    const mixInputs = ['[bgm]', ...sfxLabels].join('');
-    const mixFilter = `${mixInputs}amix=inputs=${1 + sfxTracks.length}:duration=first:dropout_transition=0[outa]`;
-    filterParts.push(mixFilter);
-  }
+  // Audio processing (delegated to audio-mixer module)
+  const audioFilters = buildAudioFilters({
+    defaultBGM: { path: bgmPath, inputIdx: audioIdx },
+    bgmVolume: scenario.audio.volume || 0.8,
+    fadeIn: scenario.audio.fade_in || 2,
+    fadeOut: scenario.audio.fade_out || 3,
+    sceneOffset,
+    renderDuration,
+    sfxTracks,
+    bgmSegments,
+    narrationTracks,
+  });
+  filterParts.push(...audioFilters);
 
   // Build output path
   const baseName = scenario.output.endsWith('.mp4')
@@ -572,7 +559,6 @@ function render(yamlPath: string, cli: CliArgs) {
     '-map "[outv]" -map "[outa]"',
     encodingParams,
     `-c:a aac -b:a 192k`,
-    `-shortest`,
     `"${outputPath}"`
   ].join(' \\\n  ');
 
@@ -635,6 +621,7 @@ function parseCliArgs(): CliArgs {
 옵션:
   --scene N       단일 장면만 렌더링 (0-based index)
   --scenes M-N    장면 범위 렌더링 (0-based, inclusive)
+  --tts           나레이션 TTS 음성 생성 (OpenAI API)
   --dry-run       ffmpeg 실행 없이 필터와 명령어만 출력
   --fast          빠른 프리뷰 (저해상도, 저품질)
   -h, --help      도움말 표시
@@ -651,6 +638,7 @@ function parseCliArgs(): CliArgs {
     yamlPath: '',
     dryRun: false,
     fast: false,
+    tts: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -676,6 +664,8 @@ function parseCliArgs(): CliArgs {
         process.exit(1);
       }
       result.sceneRange = [start, end];
+    } else if (arg === '--tts') {
+      result.tts = true;
     } else if (arg === '--dry-run') {
       result.dryRun = true;
     } else if (arg === '--fast') {
@@ -704,4 +694,7 @@ if (!existsSync(fullPath)) {
   process.exit(1);
 }
 
-render(fullPath, cliArgs);
+render(fullPath, cliArgs).catch((err) => {
+  console.error('\n❌ 렌더링 실패:', err.message || err);
+  process.exit(1);
+});

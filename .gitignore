@@ -40,3 +40,6 @@ next-env.d.ts
 assets/
 !assets/editor/
 !assets/scenarios/
+
+# TTS cache (OpenAI generated audio)
+.tts-cache/

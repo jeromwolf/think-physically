@@ -62,15 +62,22 @@ ThinkPhysically (설명 + 심화)
 - 시즌 2: 여정 (우주) - EP7~
 - 시즌 3: 정착 (화성)
 
-### 드라마 속 기술 → 사업 아이디어
-| 에피소드 | 기술 | 사업 아이디어 |
-|---------|------|--------------|
-| EP3 | 화성 물 추출 | Water-from-Mars 시스템 |
-| EP5 | 3D 프린팅 건축 | 화성 주거 모듈 |
-| EP7 | 동반자 AI | 감정 로봇 |
-| EP9 | 식량 재배 | 수직 농장 |
-| EP10 | 체온 발전 | 웨어러블 에너지 |
-| EP12 | 우주 통신 | 지연 없는 화성-지구 통신 |
+### 드라마 속 기술 → 사업 아이디어 + 논문/발견
+| 에피소드 | 기술 | 사업 아이디어 | 논문/연구 주제 |
+|---------|------|--------------|---------------|
+| EP3 | 화성 물 추출 | Water-from-Mars 시스템 | 사막 토양 수분 추출 효율 최적화 |
+| EP3 | 산소 분압/가압 | 휴대용 가압 의료기기 | 저산소 환경 가압 치료 신모델 |
+| EP5 | 3D 프린팅 건축 | 화성 주거 모듈 | 레골리스 기반 건축 소재 역학 |
+| EP7 | 동반자 AI | 감정 로봇 | 극한 환경 인간-AI 상호작용 |
+| EP9 | 식량 재배 | 수직 농장 | 저중력 식물 성장 메커니즘 |
+| EP10 | 체온 발전 | 웨어러블 에너지 | 열전 변환 효율 한계 돌파 |
+| EP12 | 우주 통신 | 지연 없는 화성-지구 통신 | 양자 얽힘 기반 초광속 통신 |
+
+### 패션 커머스 (회상신 연계)
+- 캐릭터별 회상신에 스타일리시한 의상 배치
+- 드라마 속 의상 → 쇼핑몰 바로 구매 연동
+- 강하늘(아이돌 시절) 패션이 킬러 콘텐츠
+- K-드라마 패션 영향력 활용 (협찬/커머스)
 
 ## 현재 사이트 구조
 
@@ -173,14 +180,34 @@ think-physically/
   - @MarsTicketOfficial 채널 업로드 완료
 
 ### YAML 시나리오 영상 편집기 (2026-01-28)
-- ✅ **editor/schema.ts**: 타입 정의 (VideoScenario, Scene 유니온, AudioConfig, TextConfig)
-- ✅ **editor/effects.ts**: ffmpeg 효과 필터 (zoom-in/out, slow-zoom, pan-left/right)
-- ✅ **editor/text-overlay.ts**: drawtext/drawbox 필터 (대사, 나레이션, 타이틀)
-- ✅ **editor/render.ts**: YAML 파싱 → filter_complex 조합 → ffmpeg 실행
+- ✅ **editor/schema.ts**: 통합 타입 정의 (YAMLScene, YAMLScenario, Effect 9종, Transition 8종)
+- ✅ **editor/effects.ts**: ffmpeg 효과 필터 (zoom-in/out, slow-zoom, pan-left/right/up/down, shake)
+- ✅ **editor/text-overlay.ts**: drawtext/drawbox 필터 (대사, 나레이션, 타이틀, expansion=none)
+- ✅ **editor/render.ts**: YAML 파싱 → filter_complex 조합 → ffmpeg 실행 (634줄)
+- ✅ **editor/transitions.ts**: 트랜지션 전담 (fade, cut, dissolve, wipe, slide, zoom-transition)
+- ✅ **editor/audio-mixer.ts**: 멀티 BGM + SFX 믹싱 (장면별 BGM 오버라이드, 크로스페이드, 덕킹)
 - ✅ **scenarios/character-intro.yaml**: 캐릭터 소개 영상 시나리오
+- ✅ **scenarios/ep01-one-way-ticket.yaml**: EP1 시나리오 (30장면, 155초)
+- ✅ **scenarios/ep02-survival.yaml**: EP2 시나리오 (48장면, 210초)
 - 사용법: `npx tsx assets/editor/render.ts assets/scenarios/<시나리오>.yaml`
+- 옵션: `--scene N`, `--scenes M-N`, `--dry-run`, `--fast`
 - 지원 장면: title, scene(나레이션), dialogue(대사), composite(캐릭터 합성)
-- dialogue 텍스트 순차 등장: 박스(0.8s) → 캐릭터명(1.0s) → 대사(1.8s)
+
+### 에셋 자동 준비 시스템 (2026-01-31)
+- ✅ **editor/asset-prep.ts**: 메인 CLI 오케스트레이터
+- ✅ **editor/asset-analyzer.ts**: EP 시놉시스 분석 → 에셋 매니페스트 생성
+- ✅ **editor/sfx-fetcher.ts**: Freesound.org API → SFX 자동 검색/다운로드
+- ✅ **editor/bgm-fetcher.ts**: Pixabay Music 검색 URL 생성
+- ✅ **editor/gemini-prompter.ts**: 장면별 Gemini 이미지 프롬프트 자동 생성
+- 사용법: `npx tsx assets/editor/asset-prep.ts ep03`
+- 옵션: `--analyze`, `--sfx`, `--bgm`, `--prompts`
+- 환경변수: `FREESOUND_API_KEY` (freesound.org/apiv2/apply)
+
+### 블로그 배포 (2026-01-31)
+- ✅ **Vercel 배포**: https://think-physically.vercel.app
+- ✅ **블로그 이미지 최적화**: PNG → WebP (16MB → 663KB)
+- ✅ **next/image 적용**: mars-atmosphere, mars-distance 페이지
+- GitHub: `jeromwolf/think-physically` → Vercel 자동 배포
 
 ### 시스템 설계
 - ✅ 지식 크로스오버 시스템 (7인 전문성 융합)
@@ -188,14 +215,17 @@ think-physically/
 - ✅ 멀티플랫폼 전략
 
 ## 다음 작업
-- 에피소드 1 영상 제작 (YAML 편집기 사용)
-- 유튜브 영어 제목/설명 추가 (글로벌 노출)
-- 유튜브 재생목록 생성
-- 프로필 시네마틱 버전 업그레이드
-- 웹툰 실제 작화 (AI 또는 작가)
-- 추가 에피소드 시놉시스
-- 커뮤니티 기능 기획
-- 유튜브 저작권 감지 여부 확인 (캐릭터 소개 영상 BGM)
+- **EP2 재렌더링**: 폰트 크기 키운 버전 (나레이션 40px, 대사 36px)
+- **EP3 에셋 준비**: `npx tsx assets/editor/asset-prep.ts ep03` 실행
+  - Freesound API 키 발급 필요
+  - Gemini 이미지 10개 생성 필요
+  - Pixabay BGM 4트랙 다운로드
+- **EP3 시나리오 작성**: ep03-48hours.yaml
+- **EP3~EP10 영상 제작**: 주 1~2회 업로드 목표
+- 유튜브 쇼츠 제작 (구독자 성장용)
+- 저작권 등록 (EP10 완료 후)
+- Supabase 댓글 시스템 (Phase 2)
+- 커뮤니티 + 로그인 (EP10 이후, Phase 3)
 
 ## 레퍼런스
 - **스토리**: Nicky Case (인터랙티브), Wait But Why (딥 엔터테인먼트)
@@ -215,6 +245,34 @@ think-physically/
 - 2026-01-28: 캐릭터 소개 영상 제작 및 유튜브 업로드 (60초, BGM: Pixabay Risk)
 - 2026-01-28: 7인 합성 영화 포스터 썸네일 제작
 - 2026-01-28: YAML 시나리오 영상 편집기 개발 (editor/render.ts + schema + effects + text-overlay)
+- 2026-01-29: EP1 영상 제작 (30장면, 155초) + 유튜브 업로드
+- 2026-01-30: EP2 영상 제작 (48장면, 210초) + 유튜브 업로드
+- 2026-01-30: EP2 텍스트 렌더링 버그 수정 (ffmpeg expansion=none)
+- 2026-01-30: 블로그 2개 작성 (화성 대기, 화성 거리)
+- 2026-01-31: 블로그 Vercel 배포 (think-physically.vercel.app)
+- 2026-01-31: 에디터 Phase 1 확장 (audio-mixer, transitions, shake/pan-up/down, 타입 통합)
+- 2026-01-31: 에셋 자동 준비 시스템 구축 (asset-prep CLI, Freesound/Pixabay/Gemini 연동)
+
+## 유튜브 채널
+- 채널: @MarsTicketOfficial
+- EP.01: https://www.youtube.com/watch?v=qKHeQsWrDQo
+- EP.02: https://www.youtube.com/watch?v=oJFEOS2pm94
+
+## 에디터 모듈 구조
+```
+assets/editor/
+├── render.ts          (634줄) - 메인 렌더러
+├── schema.ts          (137줄) - 타입 정의
+├── effects.ts         (87줄)  - 이펙트 9종
+├── transitions.ts     (95줄)  - 트랜지션 8종
+├── audio-mixer.ts     (273줄) - 멀티 BGM + SFX 믹싱
+├── text-overlay.ts    (221줄) - 텍스트 오버레이
+├── asset-prep.ts      - 에셋 준비 CLI
+├── asset-analyzer.ts  - 에셋 분석기
+├── sfx-fetcher.ts     - Freesound SFX 다운로더
+├── bgm-fetcher.ts     - BGM 검색 URL 생성
+└── gemini-prompter.ts - Gemini 이미지 프롬프트 생성
+```
 
 ---
 

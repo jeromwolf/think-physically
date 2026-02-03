@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Zap, Bot, Thermometer, Atom, Wind, Rocket } from 'lucide-react'
+import { ArrowLeft, Zap, Bot, Thermometer, Atom, Wind, Rocket, Droplets, Gauge, Ear } from 'lucide-react'
 
 // 로고 컴포넌트
 const Logo = ({ size = 40 }: { size?: number }) => (
@@ -21,6 +21,50 @@ const Logo = ({ size = 40 }: { size?: number }) => (
 )
 
 const blogPosts = [
+  {
+    id: 8,
+    slug: 'sound-triangulation',
+    title: '소리의 속도로 위치를 찾는다',
+    description: '삼각 측량으로 산소 누출점을 역추적하다 — 음파의 물리학',
+    category: 'Mars Science',
+    icon: <Ear className="w-6 h-6" />,
+    date: '2026-02-03',
+    readTime: '5분',
+    episodeLink: 'EP.03',
+  },
+  {
+    id: 7,
+    slug: 'oxygen-pressure',
+    title: '기압을 올리면 산소가 올라간다',
+    description: '간이 가압 챔버로 생명을 구한다 — 산소 분압의 물리학',
+    category: 'Mars Science',
+    icon: <Gauge className="w-6 h-6" />,
+    date: '2026-02-03',
+    readTime: '6분',
+    episodeLink: 'EP.03',
+  },
+  {
+    id: 6,
+    slug: 'mars-dust-storm',
+    title: '화성 먼지 폭풍의 풍속은 100km/h',
+    description: '하지만 바람의 힘은 지구의 1%도 안 된다 — 먼지 폭풍의 물리학',
+    category: 'Mars Science',
+    icon: <Wind className="w-6 h-6" />,
+    date: '2026-02-03',
+    readTime: '5분',
+    episodeLink: 'EP.03',
+  },
+  {
+    id: 5,
+    slug: 'mars-water-extraction',
+    title: '화성 토양의 수분 함량은 2%',
+    description: '460°C로 토양을 가열하면 물이 나온다 — 물 추출의 물리학',
+    category: 'Mars Science',
+    icon: <Droplets className="w-6 h-6" />,
+    date: '2026-02-03',
+    readTime: '6분',
+    episodeLink: 'EP.03',
+  },
   {
     id: 4,
     slug: 'mars-distance',
