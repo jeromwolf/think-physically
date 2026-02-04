@@ -47,6 +47,19 @@ export type Transition =
   | 'slide-right'
   | 'zoom-transition';
 
+export const VALID_EFFECTS: Effect[] = [
+  'zoom-in', 'zoom-out', 'slow-zoom',
+  'pan-left', 'pan-right', 'pan-up', 'pan-down',
+  'shake', 'none',
+];
+
+export const VALID_TRANSITIONS: Transition[] = [
+  'fade', 'cut', 'dissolve',
+  'wipe-left', 'wipe-right',
+  'slide-left', 'slide-right',
+  'zoom-transition',
+];
+
 // ============================================================================
 // Text Overlay Item (used in title/composite scenes)
 // ============================================================================
@@ -67,15 +80,26 @@ export interface YAMLTextItem {
 }
 
 // ============================================================================
+// SFX Item (for array-based SFX syntax)
+// ============================================================================
+
+export interface SFXItem {
+  file: string;
+  volume?: number;
+  delay?: number;
+  loop?: boolean;
+}
+
+// ============================================================================
 // Scene Type (YAML-compatible, flat structure)
 // ============================================================================
 
 export interface YAMLScene {
-  type: 'title' | 'scene' | 'dialogue' | 'composite';
+  type: 'title' | 'scene' | 'dialogue' | 'composite' | 'scene-title';
   bg: string;
   duration: number;
-  effect?: string;
-  transition?: string;
+  effect?: Effect;
+  transition?: Transition;
 
   /** Configurable fade duration (default 0.8) */
   fade_duration?: number;
@@ -101,9 +125,15 @@ export interface YAMLScene {
   character_position?: string;
   character_scale?: number;
 
+  // --- scene-title type (shorthand for section headers) ---
+  time_code?: string;
+  scene_title?: string;
+  title_color?: string;
+  time_color?: string;
+
   // --- SFX (sound effects) ---
-  /** Path to sound effect file (relative to assets/) */
-  sfx?: string;
+  /** Path to sound effect file (relative to assets/) OR array of SFX items */
+  sfx?: string | SFXItem[];
   /** SFX volume 0.0-1.0 (default 0.5) */
   sfx_volume?: number;
   /** Delay in seconds from scene start (default 0) */

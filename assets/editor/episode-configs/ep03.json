@@ -1,0 +1,216 @@
+{
+  "episode": 3,
+  "title": "48시간",
+  "synopsisPath": "app/ideas/mars-ticket/episode-3/page.tsx",
+  "scenes": [
+    {
+      "id": "ep03-시뮬레이션돔",
+      "description": "화성 시뮬레이션 돔 내부, 붉은 사막",
+      "timeCode": "T+00:00",
+      "mood": "tense",
+      "filePath": "scenes/ep03/ep03-시뮬레이션돔.png",
+      "gemini": {
+        "shotType": "Cinematic wide shot",
+        "visualDetails": "Mars simulation dome interior, vast red-orange Martian terrain with rocky surface, transparent dome walls showing dark sky above, 10 teams in spacesuits scattered across the dome, emergency supply crates visible",
+        "lighting": "Harsh artificial lighting mixed with reddish ambient glow from the simulated Martian sky",
+        "atmosphere": "isolated, vast, intimidating"
+      }
+    },
+    {
+      "id": "ep03-산소누출",
+      "description": "산소 누출 경보, 빨간 경고등",
+      "timeCode": "T+01:00",
+      "mood": "tense",
+      "filePath": "scenes/ep03/ep03-산소누출.png",
+      "gemini": {
+        "shotType": "Medium shot, urgent angle",
+        "visualDetails": "Inside a Mars habitat module, red warning lights flashing, visible vapor/gas stream escaping from a crack in the wall, two men (young Asian physicist and muscular military man) examining the wall with instruments, digital pressure gauge showing dropping numbers",
+        "lighting": "Red emergency lighting with strobing alarm lights",
+        "atmosphere": "tense, urgent, claustrophobic"
+      }
+    },
+    {
+      "id": "ep03-물추출",
+      "description": "화성 토양에서 물 추출, 로봇 하나",
+      "timeCode": "T+06:00",
+      "mood": "calm",
+      "filePath": "scenes/ep03/ep03-물추출.png",
+      "gemini": {
+        "shotType": "Medium wide shot",
+        "visualDetails": "Inside Mars habitat, a small robot (Robot Hana) heating Martian soil, steam rising as water vapor condenses on a collection surface, young Asian female hacker monitoring a laptop showing hacked robot diagnostics, older man with kind face overseeing the robot",
+        "lighting": "Warm interior lighting, steam catching the light",
+        "atmosphere": "focused, collaborative, hopeful"
+      }
+    },
+    {
+      "id": "ep03-첫번째밤",
+      "description": "-60도 첫 번째 밤, 어둡고 춥다",
+      "timeCode": "T+12:00",
+      "mood": "emotional",
+      "filePath": "scenes/ep03/ep03-첫번째밤.png",
+      "gemini": {
+        "shotType": "Wide shot with intimate framing",
+        "visualDetails": "Mars habitat at night, frost forming on interior walls, team of 7 huddled together for warmth in sleeping area, dim emergency lights, one young woman (former idol) humming quietly while others try to sleep, stars visible through frost-covered dome panel",
+        "lighting": "Very dim blue-cold lighting, minimal warmth, breath visible as vapor",
+        "atmosphere": "cold, vulnerable, intimate, beautiful"
+      }
+    },
+    {
+      "id": "ep03-의료응급",
+      "description": "김태호 쓰러짐, 응급 상황",
+      "timeCode": "T+18:00",
+      "mood": "tense",
+      "filePath": "scenes/ep03/ep03-의료응급.png",
+      "gemini": {
+        "shotType": "Low angle dramatic shot",
+        "visualDetails": "Elderly Asian man (67, thin, kind face) collapsed on Martian terrain inside dome, young female med student kneeling beside him checking vitals, small robot nearby expanding its shell to create a pressure chamber, other team members rushing over with concern",
+        "lighting": "Harsh overhead light on the fallen man, shadows around",
+        "atmosphere": "desperate, emotional, racing against time"
+      }
+    },
+    {
+      "id": "ep03-중간평가",
+      "description": "미드포인트 평가 화면",
+      "timeCode": "T+24:00",
+      "mood": "calm",
+      "filePath": "scenes/ep03/ep03-중간평가.png",
+      "gemini": {
+        "shotType": "Wide establishing shot",
+        "visualDetails": "Large digital display board inside Mars dome showing team status - Team 2: 2 eliminated, Team 5: 1 eliminated, Team 8: 3 eliminated, Team 7: 0 eliminated (highlighted in green). Seven team members standing together looking at the board, mixed emotions of relief and guilt",
+        "lighting": "Cool digital screen light illuminating faces",
+        "atmosphere": "solemn, relieved yet guilty"
+      }
+    },
+    {
+      "id": "ep03-린해킹",
+      "description": "린이 기밀 데이터 발견, 컴퓨터 화면",
+      "timeCode": "T+30:00",
+      "mood": "mystery",
+      "filePath": "scenes/ep03/ep03-린해킹.png",
+      "gemini": {
+        "shotType": "Close-up over shoulder",
+        "visualDetails": "Young Asian woman (22, short hair, sharp eyes) hunched over a glowing laptop screen in a dark corner of the habitat, screen showing classified text: [TEAM 7 - SPECIAL PROTOCOL], Difficulty: +40%, green terminal text reflecting on her face, USB drive in hand",
+        "lighting": "Screen glow only, very dark surroundings, green text reflection on face",
+        "atmosphere": "secretive, shocking, conspiracy"
+      }
+    },
+    {
+      "id": "ep03-모래폭풍",
+      "description": "100km/h 모래폭풍, 시야 제로",
+      "timeCode": "T+36:00",
+      "mood": "action",
+      "filePath": "scenes/ep03/ep03-모래폭풍.png",
+      "gemini": {
+        "shotType": "Dynamic wide shot",
+        "visualDetails": "Mars dust storm engulfing the simulation dome, 100km/h winds, swirling red-orange dust particles reducing visibility to near zero, dome walls flexing under pressure, team members bracing walls from inside, small robot supporting a structural beam",
+        "lighting": "Diffused reddish-brown from dust, flickering interior lights",
+        "atmosphere": "chaotic, dangerous, overwhelming"
+      }
+    },
+    {
+      "id": "ep03-고백장면",
+      "description": "김태호와 이지안 대화, 별이 보이는 밤",
+      "timeCode": "T+42:00",
+      "mood": "emotional",
+      "filePath": "scenes/ep03/ep03-고백장면.png",
+      "gemini": {
+        "shotType": "Intimate two-shot",
+        "visualDetails": "After the storm, inside quiet habitat. Elderly Asian man and young female med student sitting side by side looking through a cleared dome panel at stars. Both look tired but peaceful. Subtle sadness in their expressions. They share the knowledge of their own mortality",
+        "lighting": "Soft starlight through dome, gentle warm interior ambient",
+        "atmosphere": "quiet, bittersweet, profound, peaceful"
+      }
+    },
+    {
+      "id": "ep03-클리프행어",
+      "description": "어둠 속 실루엣, 아버지 등장",
+      "timeCode": "T+48:00",
+      "mood": "mystery",
+      "filePath": "scenes/ep03/ep03-클리프행어.png",
+      "gemini": {
+        "shotType": "Dramatic reveal shot",
+        "visualDetails": "Dark corridor of the Mars dome facility, bright light coming from an opening door at the end, a silhouette of a man standing in the doorway. In the foreground, a young Asian physicist (28) staring in shock, mouth slightly open. The silhouette suggests someone important, authoritative",
+        "lighting": "Strong backlight from door creating dramatic silhouette, dark foreground",
+        "atmosphere": "shocking, suspenseful, cliffhanger"
+      }
+    }
+  ],
+  "sfx": [
+    {
+      "keyword": "whoosh",
+      "koreanDesc": "빠른 움직임/전환 효과음",
+      "searchQuery": "whoosh cinematic transition"
+    },
+    {
+      "keyword": "alarm-siren",
+      "koreanDesc": "경보 사이렌",
+      "searchQuery": "alarm siren warning emergency"
+    },
+    {
+      "keyword": "heartbeat",
+      "koreanDesc": "심장 박동 소리",
+      "searchQuery": "heartbeat tension dramatic"
+    },
+    {
+      "keyword": "tension-drone",
+      "koreanDesc": "긴장감 드론 사운드",
+      "searchQuery": "tension drone cinematic dark"
+    },
+    {
+      "keyword": "electronic-beep",
+      "koreanDesc": "전자 비프음",
+      "searchQuery": "electronic beep interface sci-fi"
+    },
+    {
+      "keyword": "crowd-murmur",
+      "koreanDesc": "군중 웅성거림",
+      "searchQuery": "crowd murmur ambient people"
+    },
+    {
+      "keyword": "dust-storm-wind",
+      "koreanDesc": "모래폭풍 바람 소리",
+      "searchQuery": "mars dust storm wind howling"
+    },
+    {
+      "keyword": "pressure-hiss",
+      "koreanDesc": "압력 가스 누출 소리",
+      "searchQuery": "air pressure hiss leak gas"
+    },
+    {
+      "keyword": "robot-servo",
+      "koreanDesc": "로봇 서보 모터 소리",
+      "searchQuery": "robot servo motor mechanical"
+    },
+    {
+      "keyword": "dome-creak",
+      "koreanDesc": "금속 구조물 삐걱거림",
+      "searchQuery": "metal structure creak stress"
+    },
+    {
+      "keyword": "cold-wind",
+      "koreanDesc": "차가운 바람 소리",
+      "searchQuery": "cold wind arctic howl"
+    }
+  ],
+  "bgmMoods": [
+    {
+      "mood": "tense",
+      "description": "긴박한 서스펜스, 시간 제한",
+      "searchQuery": "tense suspense cinematic timer"
+    },
+    {
+      "mood": "emotional",
+      "description": "감성 피아노, 고백/이별",
+      "searchQuery": "emotional piano intimate sad"
+    },
+    {
+      "mood": "action",
+      "description": "액션, 모래폭풍",
+      "searchQuery": "action dramatic storm intense"
+    },
+    {
+      "mood": "mystery",
+      "description": "미스터리, 발견/반전",
+      "searchQuery": "mystery dark discovery reveal"
+    }
+  ]
+}
